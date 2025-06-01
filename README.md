@@ -6,6 +6,7 @@ A real-time collaborative whiteboard built as a distributed system. This applica
 - Fault tolerance with node failure handling
 - Distributed state management
 - Network partition handling
+-
 
 ## Features
 
