@@ -24964,7 +24964,7 @@ var _usersList = require("./components/UsersList");
 var _usersListDefault = parcelHelpers.interopDefault(_usersList);
 var _s = $RefreshSig$();
 // Get SERVER_URL from localStorage or use default
-const DEFAULT_SERVER_URL = "http://192.168.0.109:5000";
+const DEFAULT_SERVER_URL = "http://172.20.10.10:5000";
 const SERVER_URL = localStorage.getItem("whiteboardServerUrl") || DEFAULT_SERVER_URL;
 const GLOBAL_CLEAR_COMMAND_TYPE = "global-full-clear-command"; // New type for global clear
 console.log("[App.js] GLOBAL_CLEAR_COMMAND_TYPE initialized to:", GLOBAL_CLEAR_COMMAND_TYPE); // Verify on load

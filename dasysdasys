@@ -1,0 +1,14 @@
+client/.parcel-cache/0bd929fb280e9211-AssetGraph
+client/.parcel-cache/6c6f11c1bb25c2ee-AssetGraph
+client/.parcel-cache/data.mdb
+client/.parcel-cache/f4001b87d609d2fd-BundleGraph
+client/.parcel-cache/f84de33e781a7077-RequestGraph
+client/.parcel-cache/lock.mdb
+client/.parcel-cache/snapshot-f84de33e781a7077.txt
+client/dist/client.31b563d9.js
+client/dist/client.31b563d9.js.map
+client/dist/index.html
+client/src/App.js
+client/src/components/NetworkInfo.js
+client/src/components/WhiteboardToolbar.js
+server/index.js
