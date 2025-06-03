@@ -1,9 +1,9 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors');
-const { v4: uuidv4 } = require('uuid');
-const os = require('os');
+const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
+const cors = require("cors");
+const { v4: uuidv4 } = require("uuid");
+const os = require("os");
 
 const app = express();
 app.use(cors());
@@ -12,15 +12,20 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
 });
 
 // Store for drawing elements and connected clients
 const drawings = [];
 const users = {};
 let drawingsBackup = []; // Backup for recovery
+
+function clearBackup() {
+  drawingsBackup.length = 0;
+  console.log("Backup cleared");
+}
 
 // Backup drawings every 60 seconds
 setInterval(() => {
@@ -31,111 +36,115 @@ setInterval(() => {
 }, 60000);
 
 // Handle socket connections
-io.on('connection', (socket) => {
+io.on("connection", (socket) => {
   const clientId = socket.id;
   const query = socket.handshake.query;
-  
+
   // Extract username from query if available
   const userName = query.userName || `User-${clientId.substr(0, 4)}`;
-  
+
   // Default user information
-  users[clientId] = { 
-    id: clientId, 
+  users[clientId] = {
+    id: clientId,
     userName,
     color: getRandomColor(),
     joinedAt: new Date().toISOString(),
-    lastActive: new Date().toISOString()
+    lastActive: new Date().toISOString(),
   };
-  
+
   console.log(`Client connected: ${clientId} (${userName})`);
-  
+
   // Broadcast updated users list
-  io.emit('users-update', users);
-  
+  io.emit("users-update", users);
+
   // Send current drawing state to new client
-  socket.emit('init-drawings', drawings);
+  socket.emit("init-drawings", drawings);
 
   // Handle request for initial state (drawings + users)
-  socket.on('request-initial-state', () => {
+  socket.on("request-initial-state", () => {
     console.log(`Client ${clientId} requested initial state`);
-    socket.emit('init-drawings', drawings);
-    socket.emit('users-update', users);
+    socket.emit("init-drawings", drawings);
+    socket.emit("users-update", users);
   });
 
   // Handle drawing settings changes
-  socket.on('drawing-settings-change', (data) => {
+  socket.on("drawing-settings-change", (data) => {
     console.log(`Received drawing settings change from ${clientId}`);
-    
+
     // Update user's last active timestamp
     if (users[clientId]) {
       users[clientId].lastActive = new Date().toISOString();
     }
-    
+
     // Broadcast to all OTHER clients
-    socket.broadcast.emit('drawing-settings-change', data);
+    socket.broadcast.emit("drawing-settings-change", data);
   });
 
   // Handle user information updates
-  socket.on('user-info', (userInfo) => {
+  socket.on("user-info", (userInfo) => {
     if (users[clientId]) {
       users[clientId] = {
         ...users[clientId],
         ...userInfo,
-        lastActive: new Date().toISOString()
+        lastActive: new Date().toISOString(),
       };
-      
+
       // Broadcast updated users list to all clients
-      io.emit('users-update', users);
-      console.log(`Updated user info for ${clientId}, broadcasting to all clients`);
+      io.emit("users-update", users);
+      console.log(
+        `Updated user info for ${clientId}, broadcasting to all clients`
+      );
     }
   });
-  
+
   // Handle ping for diagnostics
-  socket.on('ping', (data, callback) => {
-    if (typeof callback === 'function') {
+  socket.on("ping", (data, callback) => {
+    if (typeof callback === "function") {
       callback();
     }
   });
-  
+
   // Handle cursor position updates
-  socket.on('cursor-move', (data) => {
+  socket.on("cursor-move", (data) => {
     if (users[clientId]) {
       users[clientId].lastActive = new Date().toISOString();
     }
-    
+
     // Broadcast cursor position to all other clients
-    socket.broadcast.emit('cursor-move', {
+    socket.broadcast.emit("cursor-move", {
       clientId,
       x: data.x,
       y: data.y,
-      userName: users[clientId]?.userName || data.userName || 'User',
-      color: users[clientId]?.color || getRandomColor()
+      userName: users[clientId]?.userName || data.userName || "User",
+      color: users[clientId]?.color || getRandomColor(),
     });
   });
 
   // Handle new drawing element
-  socket.on('draw-element', (element) => {
+  socket.on("draw-element", (element) => {
     console.log(`Received drawing from ${clientId}`, element.type);
-    
+
     // Update user's last active timestamp
     if (users[clientId]) {
       users[clientId].lastActive = new Date().toISOString();
     }
-    
+
     const drawingElement = {
       id: uuidv4(),
       ...element,
       createdBy: clientId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     // Store drawing element
     drawings.push(drawingElement);
-    
+
     // Broadcast to ALL clients including sender to ensure consistency
-    io.emit('draw-element', drawingElement);
-    console.log(`Broadcasting drawing element #${drawingElement.id} to all clients`);
-    
+    io.emit("draw-element", drawingElement);
+    console.log(
+      `Broadcasting drawing element #${drawingElement.id} to all clients`
+    );
+
     // If we have too many elements, consider cleaning up
     if (drawings.length > 10000) {
       // Remove oldest elements to keep memory footprint manageable
@@ -143,17 +152,21 @@ io.on('connection', (socket) => {
       const excessElements = drawings.length - 10000;
       if (excessElements > 0) {
         let removed = 0;
-        const newDrawings = drawings.filter(d => {
+        const newDrawings = drawings.filter((d) => {
           if (removed >= excessElements) return true;
-          if (d.type === 'pencil' && d.points && d.points.length > 0) {
+          if (d.type === "pencil" && d.points && d.points.length > 0) {
             removed++;
             return false;
           }
           return true;
         });
-        
+
         if (newDrawings.length < drawings.length) {
-          console.log(`Cleaned up ${drawings.length - newDrawings.length} old drawing elements`);
+          console.log(
+            `Cleaned up ${
+              drawings.length - newDrawings.length
+            } old drawing elements`
+          );
           drawings.length = 0;
           drawings.push(...newDrawings);
         }
@@ -162,26 +175,27 @@ io.on('connection', (socket) => {
   });
 
   // Handle clear canvas event
-  socket.on('clear-canvas', () => {
+  socket.on("clear-canvas", () => {
     console.log(`Canvas cleared by ${clientId}`);
-    
+
     // Backup before clearing
-    drawingsBackup = [...drawings];
-    
+    // drawingsBackup = [...drawings];
+
     // Clear all drawings
     drawings.length = 0;
-    
+    clearBackup();
+
     // Update user's last active timestamp
     if (users[clientId]) {
       users[clientId].lastActive = new Date().toISOString();
     }
-    
+
     // Broadcast to all OTHER clients
-    socket.broadcast.emit('clear-canvas');
+    socket.broadcast.emit("clear-canvas");
   });
-  
+
   // Handle undo last action
-  socket.on('undo', () => {
+  socket.on("undo", () => {
     if (drawings.length > 0) {
       // Find last element drawn by this user
       for (let i = drawings.length - 1; i >= 0; i--) {
@@ -189,9 +203,9 @@ io.on('connection', (socket) => {
           // Remove it
           const removed = drawings.splice(i, 1)[0];
           console.log(`User ${clientId} undid element ${removed.id}`);
-          
+
           // Notify all clients to redraw
-          io.emit('undo', { elementId: removed.id });
+          io.emit("undo", { elementId: removed.id });
           break;
         }
       }
@@ -199,25 +213,37 @@ io.on('connection', (socket) => {
   });
 
   // Handle client disconnection
-  socket.on('disconnect', () => {
-    console.log(`Client disconnected: ${clientId} (${users[clientId]?.userName || 'Unknown'})`);
-    
+  socket.on("disconnect", () => {
+    console.log(
+      `Client disconnected: ${clientId} (${
+        users[clientId]?.userName || "Unknown"
+      })`
+    );
+
     // Remove from users list
     delete users[clientId];
-    
+
     // Notify other clients about disconnection
-    io.emit('client-disconnected', clientId);
-    
+    io.emit("client-disconnected", clientId);
+
     // Broadcast updated users list
-    io.emit('users-update', users);
+    io.emit("users-update", users);
   });
 });
 
 // Helper to generate a random color
 function getRandomColor() {
   const colors = [
-    '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
-    '#1abc9c', '#d35400', '#34495e', '#c0392b', '#16a085'
+    "#3498db",
+    "#e74c3c",
+    "#2ecc71",
+    "#f39c12",
+    "#9b59b6",
+    "#1abc9c",
+    "#d35400",
+    "#34495e",
+    "#c0392b",
+    "#16a085",
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 }
@@ -226,50 +252,50 @@ function getRandomColor() {
 const getLocalIPs = () => {
   const interfaces = os.networkInterfaces();
   const addresses = [];
-  
+
   for (const iface of Object.values(interfaces)) {
     for (const alias of iface) {
-      if (alias.family === 'IPv4' && !alias.internal) {
+      if (alias.family === "IPv4" && !alias.internal) {
         addresses.push(alias.address);
       }
     }
   }
-  
+
   return addresses;
 };
 
 // API endpoints
-app.get('/api/drawings', (req, res) => {
+app.get("/api/drawings", (req, res) => {
   res.json(drawings);
 });
 
-app.get('/api/users', (req, res) => {
+app.get("/api/users", (req, res) => {
   res.json(users);
 });
 
 // Restore backup endpoint (protected with a simple key)
-app.post('/api/restore-backup', (req, res) => {
+app.post("/api/restore-backup", (req, res) => {
   const { key } = req.body;
-  
-  if (key !== 'restore-key-123') {
-    return res.status(401).json({ error: 'Invalid key' });
+
+  if (key !== "restore-key-123") {
+    return res.status(401).json({ error: "Invalid key" });
   }
-  
+
   if (drawingsBackup.length > 0) {
     drawings.length = 0;
     drawings.push(...drawingsBackup);
-    io.emit('init-drawings', drawings);
+    io.emit("init-drawings", drawings);
     res.json({ success: true, restored: drawingsBackup.length });
   } else {
-    res.status(404).json({ error: 'No backup available' });
+    res.status(404).json({ error: "No backup available" });
   }
 });
 
 // Serve a simple landing page with connection info
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   const ipAddresses = getLocalIPs();
   const port = process.env.PORT || 5000;
-  
+
   const html = `
   <!DOCTYPE html>
   <html lang="en">
@@ -376,7 +402,12 @@ app.get('/', (req, res) => {
       <p>2. Update the <code>SERVER_URL</code> constant with one of these values:</p>
       <ul>
         <li>Local access: <code>const SERVER_URL = 'http://localhost:${port}';</code></li>
-        ${ipAddresses.map(ip => `<li>Network access: <code>const SERVER_URL = 'http://${ip}:${port}';</code></li>`).join('')}
+        ${ipAddresses
+          .map(
+            (ip) =>
+              `<li>Network access: <code>const SERVER_URL = 'http://${ip}:${port}';</code></li>`
+          )
+          .join("")}
       </ul>
     </div>
     
@@ -390,49 +421,49 @@ app.get('/', (req, res) => {
   </body>
   </html>
   `;
-  
+
   res.send(html);
 });
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
-  
+
   // Display access URLs
   const ipAddresses = getLocalIPs();
-  console.log('\nAccess URLs:');
+  console.log("\nAccess URLs:");
   console.log(`Local: http://localhost:${PORT}`);
-  ipAddresses.forEach(ip => {
+  ipAddresses.forEach((ip) => {
     console.log(`Network: http://${ip}:${PORT}`);
   });
-  console.log('\nFor clients, use these URLs in the client configuration.');
+  console.log("\nFor clients, use these URLs in the client configuration.");
 });
 
 // Add unhandled rejection handler
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
   // Application specific logging, throwing an error, or other logic here
 });
 
 // Add uncaught exception handler
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
   // Attempt to gracefully shutdown
   process.exit(1);
 });
 
 // Handle graceful shutdown
-process.on('SIGINT', () => {
-  console.log('Shutting down server...');
-  
+process.on("SIGINT", () => {
+  console.log("Shutting down server...");
+
   try {
     // Close all socket connections
     if (io && io.sockets && io.sockets.sockets) {
       const sockets = io.sockets.sockets;
-      if (typeof sockets.forEach === 'function') {
-        sockets.forEach(socket => {
-          if (socket && typeof socket.disconnect === 'function') {
+      if (typeof sockets.forEach === "function") {
+        sockets.forEach((socket) => {
+          if (socket && typeof socket.disconnect === "function") {
             console.log(`Forcefully closing socket: ${socket.id}`);
             socket.disconnect(true);
           }
@@ -446,25 +477,25 @@ process.on('SIGINT', () => {
       }
     }
   } catch (err) {
-    console.error('Error during socket disconnection:', err);
+    console.error("Error during socket disconnection:", err);
   }
-  
+
   // Set a timeout to force exit if graceful shutdown takes too long
   const forceExitTimeout = setTimeout(() => {
-    console.log('Forcing server shutdown after timeout');
+    console.log("Forcing server shutdown after timeout");
     process.exit(0);
   }, 3000);
-  
+
   // Clear the timeout if server closes properly
   try {
     server.close(() => {
       clearTimeout(forceExitTimeout);
-      console.log('Server shut down successfully');
+      console.log("Server shut down successfully");
       process.exit(0);
     });
   } catch (err) {
-    console.error('Error closing server:', err);
+    console.error("Error closing server:", err);
     clearTimeout(forceExitTimeout);
     process.exit(1);
   }
-}); 
+});

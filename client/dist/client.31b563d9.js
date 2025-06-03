@@ -160,7 +160,7 @@
       });
     }
   }
-})({"5j6Kf":[function(require,module,exports,__globalThis) {
+})({"ieapP":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
@@ -24964,31 +24964,31 @@ var _usersList = require("./components/UsersList");
 var _usersListDefault = parcelHelpers.interopDefault(_usersList);
 var _s = $RefreshSig$();
 // Get SERVER_URL from localStorage or use default
-const DEFAULT_SERVER_URL = 'http://172.20.10.2:5000';
-const SERVER_URL = localStorage.getItem('whiteboardServerUrl') || DEFAULT_SERVER_URL;
-const GLOBAL_CLEAR_COMMAND_TYPE = 'global-full-clear-command'; // New type for global clear
-console.log('[App.js] GLOBAL_CLEAR_COMMAND_TYPE initialized to:', GLOBAL_CLEAR_COMMAND_TYPE); // Verify on load
+const DEFAULT_SERVER_URL = "http://192.168.0.109:5000";
+const SERVER_URL = localStorage.getItem("whiteboardServerUrl") || DEFAULT_SERVER_URL;
+const GLOBAL_CLEAR_COMMAND_TYPE = "global-full-clear-command"; // New type for global clear
+console.log("[App.js] GLOBAL_CLEAR_COMMAND_TYPE initialized to:", GLOBAL_CLEAR_COMMAND_TYPE); // Verify on load
 function App() {
     _s();
     const [socket, setSocket] = (0, _react.useState)(null);
     const [connected, setConnected] = (0, _react.useState)(false);
-    const [clientId, setClientId] = (0, _react.useState)('');
+    const [clientId, setClientId] = (0, _react.useState)("");
     const [connectionError, setConnectionError] = (0, _react.useState)(null);
     const [userName, setUserName] = (0, _react.useState)(()=>{
-        const savedName = localStorage.getItem('whiteboardUserName');
+        const savedName = localStorage.getItem("whiteboardUserName");
         return savedName || `User-${Math.floor(Math.random() * 1000)}`;
     });
     const [serverUrl, setServerUrl] = (0, _react.useState)(SERVER_URL);
     const [connectedUsers, setConnectedUsers] = (0, _react.useState)({});
     const [cursors, setCursors] = (0, _react.useState)({});
     const [drawingSettings, setDrawingSettings] = (0, _react.useState)({
-        color: '#000000',
+        color: "#000000",
         lineWidth: 4,
-        tool: 'pencil'
+        tool: "pencil"
     });
     // Element states
     const [selectedElement, setSelectedElement] = (0, _react.useState)(null);
-    const [action, setAction] = (0, _react.useState)('none'); // none, drawing, moving, resizing
+    const [action, setAction] = (0, _react.useState)("none"); // none, drawing, moving, resizing
     const [position, setPosition] = (0, _react.useState)({
         x: 0,
         y: 0
@@ -25002,7 +25002,7 @@ function App() {
         y: 0
     });
     const elementsRef = (0, _react.useRef)([]);
-    console.log('[App.js Function Scope] GLOBAL_CLEAR_COMMAND_TYPE is:', GLOBAL_CLEAR_COMMAND_TYPE); // Verify in function scope
+    console.log("[App.js Function Scope] GLOBAL_CLEAR_COMMAND_TYPE is:", GLOBAL_CLEAR_COMMAND_TYPE); // Verify in function scope
     // Initialize canvas
     (0, _react.useEffect)(()=>{
         const canvas = canvasRef.current;
@@ -25011,9 +25011,9 @@ function App() {
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
         // Setup canvas context
-        const ctx = canvas.getContext('2d');
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+        const ctx = canvas.getContext("2d");
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         ctx.strokeStyle = drawingSettings.color;
         ctx.lineWidth = drawingSettings.lineWidth;
         contextRef.current = ctx;
@@ -25023,8 +25023,8 @@ function App() {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
             // Restore context settings after resize
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
             ctx.strokeStyle = drawingSettings.color;
             ctx.lineWidth = drawingSettings.lineWidth;
             // Restore drawings
@@ -25034,8 +25034,8 @@ function App() {
             };
             img.src = currentDrawings;
         }, 200);
-        window.addEventListener('resize', handleResize);
-        return ()=>window.removeEventListener('resize', handleResize);
+        window.addEventListener("resize", handleResize);
+        return ()=>window.removeEventListener("resize", handleResize);
     }, [
         drawingSettings.color,
         drawingSettings.lineWidth
@@ -25054,62 +25054,62 @@ function App() {
             }
         });
         // Better connection management
-        newSocket.on('connect', ()=>{
+        newSocket.on("connect", ()=>{
             console.log(`Connected to server with ID: ${newSocket.id}`);
             setConnected(true);
             setClientId(newSocket.id);
             reconnectAttempts = 0;
             // Identify user to server
-            newSocket.emit('user-info', {
+            newSocket.emit("user-info", {
                 userName,
                 color: getRandomColor()
             });
             // Request current drawings and users immediately after connection
-            newSocket.emit('request-initial-state');
+            newSocket.emit("request-initial-state");
         });
-        newSocket.on('connect_error', (error)=>{
-            console.error('Connection error:', error);
+        newSocket.on("connect_error", (error)=>{
+            console.error("Connection error:", error);
             setConnected(false);
             setConnectionError(`Connection error: ${error.message}`);
             reconnectAttempts++;
             if (reconnectAttempts >= maxReconnectAttempts) {
-                console.error('Maximum reconnection attempts reached');
+                console.error("Maximum reconnection attempts reached");
                 setConnectionError(`Failed to connect after ${maxReconnectAttempts} attempts. Check server URL and try again.`);
                 // Save any unsaved work to local storage
                 if (elementsRef.current.length > 0 && canvasRef.current) try {
                     const dataUrl = canvasRef.current.toDataURL();
-                    localStorage.setItem('whiteboard_backup', dataUrl);
-                    localStorage.setItem('whiteboard_backup_time', new Date().toISOString());
-                    console.log('Whiteboard state saved to local storage');
+                    localStorage.setItem("whiteboard_backup", dataUrl);
+                    localStorage.setItem("whiteboard_backup_time", new Date().toISOString());
+                    console.log("Whiteboard state saved to local storage");
                 } catch (err) {
-                    console.error('Failed to save whiteboard state:', err);
+                    console.error("Failed to save whiteboard state:", err);
                 }
             }
         });
         // After connect_error handler and before the undo handler
-        newSocket.on('disconnect', ()=>{
-            console.log('Disconnected from server');
+        newSocket.on("disconnect", ()=>{
+            console.log("Disconnected from server");
             setConnected(false);
-            setConnectionError('Disconnected from server. Attempting to reconnect...');
+            setConnectionError("Disconnected from server. Attempting to reconnect...");
             // If we have unsent changes, save them locally
             if (elementsRef.current.length > 0) try {
-                localStorage.setItem('whiteboard_elements', JSON.stringify(elementsRef.current));
-                console.log('Saved elements to local storage during disconnect');
+                localStorage.setItem("whiteboard_elements", JSON.stringify(elementsRef.current));
+                console.log("Saved elements to local storage during disconnect");
             } catch (err) {
-                console.error('Error saving elements to local storage:', err);
+                console.error("Error saving elements to local storage:", err);
             }
         });
         // Handle receiving undo events
-        newSocket.on('undo', ({ elementId })=>{
-            console.log('Received undo for element:', elementId);
+        newSocket.on("undo", ({ elementId })=>{
+            console.log("Received undo for element:", elementId);
             elementsRef.current = elementsRef.current.filter((el)=>el.id !== elementId);
             redrawCanvas();
         });
         // Add error handling for events
         [
-            'error',
-            'connect_failed',
-            'reconnect_failed'
+            "error",
+            "connect_failed",
+            "reconnect_failed"
         ].forEach((event)=>{
             newSocket.on(event, (error)=>{
                 console.error(`Socket ${event}:`, error);
@@ -25126,7 +25126,7 @@ function App() {
         };
         // Optimize object construction
         const throttledEmitCursor = throttle((x, y)=>{
-            if (newSocket.connected) newSocket.emit('cursor-move', {
+            if (newSocket.connected) newSocket.emit("cursor-move", {
                 x,
                 y,
                 userName
@@ -25151,8 +25151,8 @@ function App() {
             canvas.width = newWidth;
             canvas.height = newHeight;
             // Restore context settings
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
             ctx.strokeStyle = drawingSettings.color;
             ctx.lineWidth = drawingSettings.lineWidth;
             // Restore drawings
@@ -25166,24 +25166,24 @@ function App() {
                     };
                     // Scale element properties based on type
                     switch(el.type){
-                        case 'line':
+                        case "line":
                             scaledEl.startX *= scaleX;
                             scaledEl.startY *= scaleY;
                             scaledEl.endX *= scaleX;
                             scaledEl.endY *= scaleY;
                             break;
-                        case 'rectangle':
+                        case "rectangle":
                             scaledEl.startX *= scaleX;
                             scaledEl.startY *= scaleY;
                             scaledEl.width *= scaleX;
                             scaledEl.height *= scaleY;
                             break;
-                        case 'circle':
+                        case "circle":
                             scaledEl.centerX *= scaleX;
                             scaledEl.centerY *= scaleY;
                             scaledEl.radius *= Math.min(scaleX, scaleY);
                             break;
-                        case 'text':
+                        case "text":
                             scaledEl.x *= scaleX;
                             scaledEl.y *= scaleY;
                             // Adjust font size
@@ -25193,7 +25193,7 @@ function App() {
                                 scaledEl.font = el.font.replace(/\d+px/, `${Math.round(newFontSize)}px`);
                             }
                             break;
-                        case 'pencil':
+                        case "pencil":
                             if (el.points) scaledEl.points = el.points.map((point)=>({
                                     x: point.x * scaleX,
                                     y: point.y * scaleY
@@ -25205,10 +25205,10 @@ function App() {
             };
             img.src = currentDrawings;
         }, 250);
-        newSocket.on('init-drawings', (drawings)=>{
+        newSocket.on("init-drawings", (drawings)=>{
             console.log(`Received ${drawings.length} initial drawings`);
             if (!contextRef.current) {
-                console.warn('Canvas context not ready yet');
+                console.warn("Canvas context not ready yet");
                 return;
             }
             // Save elements for potential manipulation
@@ -25216,13 +25216,13 @@ function App() {
             // Redraw all saved elements
             redrawCanvas();
         });
-        newSocket.on('users-update', (users)=>{
-            console.log('Received users update:', users);
+        newSocket.on("users-update", (users)=>{
+            console.log("Received users update:", users);
             // Make sure users is an object and not null
-            if (users && typeof users === 'object') setConnectedUsers(users);
-            else console.error('Received invalid users data:', users);
+            if (users && typeof users === "object") setConnectedUsers(users);
+            else console.error("Received invalid users data:", users);
         });
-        newSocket.on('cursor-move', (data)=>{
+        newSocket.on("cursor-move", (data)=>{
             if (data.clientId !== newSocket.id) setCursors((prev)=>({
                     ...prev,
                     [data.clientId]: {
@@ -25233,10 +25233,10 @@ function App() {
                     }
                 }));
         });
-        newSocket.on('draw-element', (element)=>{
-            console.log('[draw-element handler] Received element. Type:', element && element.type, 'ID:', element && element.id, 'GLOBAL_TYPE_CHECK:', GLOBAL_CLEAR_COMMAND_TYPE);
+        newSocket.on("draw-element", (element)=>{
+            console.log("[draw-element handler] Received element. Type:", element && element.type, "ID:", element && element.id, "GLOBAL_TYPE_CHECK:", GLOBAL_CLEAR_COMMAND_TYPE);
             if (!element || !element.type) {
-                console.warn('Received malformed element or element without type:', element);
+                console.warn("Received malformed element or element without type:", element);
                 return;
             }
             // DEBUG: Log every element received
@@ -25245,10 +25245,10 @@ function App() {
             if (element.type === GLOBAL_CLEAR_COMMAND_TYPE) {
                 console.log(`Processing ${GLOBAL_CLEAR_COMMAND_TYPE} command from user: ${element.userName} (ID: ${element.createdBy})`);
                 if (contextRef.current && canvasRef.current) {
-                    console.log('Clearing canvas context and elementsRef due to global clear command.');
+                    console.log("Clearing canvas context and elementsRef due to global clear command.");
                     contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
                     elementsRef.current = []; // Clear all stored drawing elements
-                } else console.error('Cannot execute global clear: canvas or context not ready.');
+                } else console.error("Cannot execute global clear: canvas or context not ready.");
                 return; // IMPORTANT: Stop further processing for this special command
             }
             // Remove or comment out old clear logic:
@@ -25262,27 +25262,27 @@ function App() {
                 // Or it could be an update to an existing element if that feature is added.
                 // For simple drawing, if it's our own and exists, we probably drew it optimistically.
                 if (element.createdBy === clientId) {
-                    console.log('Skipping own element received from server (already drawn or processed locally): ', element.id);
+                    console.log("Skipping own element received from server (already drawn or processed locally): ", element.id);
                     return;
                 }
                 // If it is from another user and somehow already exists, replace it to be safe (e.g. if it's an update)
                 // This situation should be rare for new drawings.
-                console.warn('Element with ID already exists, replacing (potentially an update from another user):', element.id);
+                console.warn("Element with ID already exists, replacing (potentially an update from another user):", element.id);
                 elementsRef.current = elementsRef.current.map((el)=>el.id === element.id ? element : el);
             } else // New element from another user, or our own element that wasn't drawn optimistically (less common).
             elementsRef.current.push(element);
             // Redraw the entire canvas with the updated list of elements.
             redrawCanvas();
         });
-        newSocket.on('clear-canvas', (data)=>{
-            console.log('Canvas cleared by user:', data?.clearedBy || 'unknown', 'timestamp:', data?.timestamp);
+        newSocket.on("clear-canvas", (data)=>{
+            console.log("Canvas cleared by user:", data?.clearedBy || "unknown", "timestamp:", data?.timestamp);
             elementsRef.current = [];
             clearCanvas();
             // Force a redraw in case there are any lingering elements
             if (contextRef.current && canvasRef.current) contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         });
-        newSocket.on('client-disconnected', (disconnectedClientId)=>{
-            console.log('Client disconnected', disconnectedClientId);
+        newSocket.on("client-disconnected", (disconnectedClientId)=>{
+            console.log("Client disconnected", disconnectedClientId);
             setCursors((prev)=>{
                 const newCursors = {
                     ...prev
@@ -25292,16 +25292,16 @@ function App() {
             });
         });
         // Add drawing settings synchronization
-        newSocket.on('drawing-settings-change', (settings)=>{
-            console.log('Received drawing settings change:', settings);
+        newSocket.on("drawing-settings-change", (settings)=>{
+            console.log("Received drawing settings change:", settings);
             // Only update if it's not from this client
             if (settings.clientId !== newSocket.id) setDrawingSettings((prev)=>({
                     ...prev,
                     ...settings.settings
                 }));
         });
-        newSocket.on('direct-message', (data)=>{
-            console.log('Received direct message:', data);
+        newSocket.on("direct-message", (data)=>{
+            console.log("Received direct message:", data);
         });
         setSocket(newSocket);
         // Send cursor position every 50ms if changed
@@ -25316,7 +25316,7 @@ function App() {
             const y = e.clientY - rect.top;
             // Only send if position changed significantly
             if (Math.abs(x - lastSentPosition.x) > 5 || Math.abs(y - lastSentPosition.y) > 5) {
-                newSocket.emit('cursor-move', {
+                newSocket.emit("cursor-move", {
                     x,
                     y,
                     userName
@@ -25332,11 +25332,11 @@ function App() {
                 y
             });
         };
-        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener("mousemove", handleMouseMove);
         // Cleanup on component unmount
         return ()=>{
-            console.log('Disconnecting socket');
-            document.removeEventListener('mousemove', handleMouseMove);
+            console.log("Disconnecting socket");
+            document.removeEventListener("mousemove", handleMouseMove);
             newSocket.disconnect();
         };
     }, [
@@ -25348,8 +25348,8 @@ function App() {
         if (contextRef.current) {
             contextRef.current.strokeStyle = drawingSettings.color;
             contextRef.current.lineWidth = drawingSettings.lineWidth;
-            if (drawingSettings.tool === 'eraser') contextRef.current.globalCompositeOperation = 'destination-out';
-            else contextRef.current.globalCompositeOperation = 'source-over';
+            if (drawingSettings.tool === "eraser") contextRef.current.globalCompositeOperation = "destination-out";
+            else contextRef.current.globalCompositeOperation = "source-over";
         }
     }, [
         drawingSettings
@@ -25358,7 +25358,7 @@ function App() {
     const changeServerUrl = (newUrl)=>{
         if (newUrl && newUrl !== serverUrl) {
             // Save to localStorage
-            localStorage.setItem('whiteboardServerUrl', newUrl);
+            localStorage.setItem("whiteboardServerUrl", newUrl);
             // Disconnect current socket if any
             if (socket) socket.disconnect();
             // Update state
@@ -25371,15 +25371,15 @@ function App() {
     // User name change handler
     const handleUserNameChange = (newName)=>{
         setUserName(newName);
-        localStorage.setItem('whiteboardUserName', newName);
-        if (socket && connected) socket.emit('user-info', {
+        localStorage.setItem("whiteboardUserName", newName);
+        if (socket && connected) socket.emit("user-info", {
             userName: newName
         });
     };
     // Redraw the entire canvas
     const redrawCanvas = ()=>{
         if (!contextRef.current || !canvasRef.current) {
-            console.error('redrawCanvas: Canvas or context not available.');
+            console.error("redrawCanvas: Canvas or context not available.");
             return;
         }
         const ctx = contextRef.current;
@@ -25391,7 +25391,7 @@ function App() {
             if (element && element.type !== GLOBAL_CLEAR_COMMAND_TYPE) try {
                 drawElement(ctx, element);
             } catch (e) {
-                console.error('redrawCanvas: Error calling drawElement:', e, element);
+                console.error("redrawCanvas: Error calling drawElement:", e, element);
             }
         });
     };
@@ -25403,17 +25403,17 @@ function App() {
             x: offsetX,
             y: offsetY
         };
-        if (drawingSettings.tool === 'select') {
+        if (drawingSettings.tool === "select") {
             // Check if clicked on an element
             const clickedElement = elementsRef.current.findLast((el)=>isPointInElement(offsetX, offsetY, el));
             if (clickedElement) {
                 setSelectedElement(clickedElement);
-                setAction('moving');
+                setAction("moving");
             } else setSelectedElement(null);
             return;
         }
         isDrawingRef.current = true;
-        setAction('drawing');
+        setAction("drawing");
         // Create new element based on selected tool
         const newElement = {
             type: drawingSettings.tool,
@@ -25424,7 +25424,7 @@ function App() {
         };
         // Tool-specific properties
         switch(drawingSettings.tool){
-            case 'pencil':
+            case "pencil":
                 newElement.points = [
                     {
                         x: offsetX,
@@ -25432,25 +25432,25 @@ function App() {
                     }
                 ];
                 break;
-            case 'line':
+            case "line":
                 newElement.startX = offsetX;
                 newElement.startY = offsetY;
                 newElement.endX = offsetX;
                 newElement.endY = offsetY;
                 break;
-            case 'rectangle':
+            case "rectangle":
                 newElement.startX = offsetX;
                 newElement.startY = offsetY;
                 newElement.width = 0;
                 newElement.height = 0;
                 break;
-            case 'circle':
+            case "circle":
                 newElement.centerX = offsetX;
                 newElement.centerY = offsetY;
                 newElement.radius = 0;
                 break;
-            case 'text':
-                const text = prompt('Enter text:');
+            case "text":
+                const text = prompt("Enter text:");
                 if (text) {
                     newElement.text = text;
                     newElement.x = offsetX;
@@ -25461,9 +25461,9 @@ function App() {
                     return;
                 }
                 break;
-            case 'eraser':
-                newElement.type = 'pencil'; // Eraser is just a white pencil
-                newElement.color = '#FFFFFF';
+            case "eraser":
+                newElement.type = "pencil"; // Eraser is just a white pencil
+                newElement.color = "#FFFFFF";
                 newElement.points = [
                     {
                         x: offsetX,
@@ -25475,21 +25475,21 @@ function App() {
         // Store element temporarily
         elementsRef.current.push(newElement);
         // For dots, draw immediately
-        if (drawingSettings.tool === 'pencil' || drawingSettings.tool === 'eraser') {
+        if (drawingSettings.tool === "pencil" || drawingSettings.tool === "eraser") {
             contextRef.current.beginPath();
             contextRef.current.arc(offsetX, offsetY, drawingSettings.lineWidth / 2, 0, Math.PI * 2);
-            contextRef.current.fillStyle = drawingSettings.tool === 'eraser' ? '#FFFFFF' : drawingSettings.color;
+            contextRef.current.fillStyle = drawingSettings.tool === "eraser" ? "#FFFFFF" : drawingSettings.color;
             contextRef.current.fill();
         }
         // For finished tools like text, send immediately
-        if (drawingSettings.tool === 'text') {
+        if (drawingSettings.tool === "text") {
             isDrawingRef.current = false;
             // Draw locally
             drawElement(contextRef.current, newElement);
             // Send to server
             if (socket) {
-                console.log('Sending drawing element to server:', newElement);
-                socket.emit('draw-element', newElement);
+                console.log("Sending drawing element to server:", newElement);
+                socket.emit("draw-element", newElement);
             }
         }
     };
@@ -25505,7 +25505,7 @@ function App() {
         });
         setShowTooltip(true);
         // If using select tool
-        if (action === 'moving' && selectedElement) {
+        if (action === "moving" && selectedElement) {
             // Calculate movement delta
             const deltaX = offsetX - lastPosRef.current.x;
             const deltaY = offsetY - lastPosRef.current.y;
@@ -25526,7 +25526,7 @@ function App() {
         const currentElement = elementsRef.current[elementsRef.current.length - 1];
         // Update element based on tool
         switch(currentElement.type){
-            case 'pencil':
+            case "pencil":
                 currentElement.points.push({
                     x: offsetX,
                     y: offsetY
@@ -25538,21 +25538,21 @@ function App() {
                 ctx.lineTo(offsetX, offsetY);
                 ctx.stroke();
                 break;
-            case 'line':
+            case "line":
                 // Update end point
                 currentElement.endX = offsetX;
                 currentElement.endY = offsetY;
                 // Redraw
                 redrawCanvas();
                 break;
-            case 'rectangle':
+            case "rectangle":
                 // Update width and height
                 currentElement.width = offsetX - currentElement.startX;
                 currentElement.height = offsetY - currentElement.startY;
                 // Redraw
                 redrawCanvas();
                 break;
-            case 'circle':
+            case "circle":
                 // Update radius
                 const dx = offsetX - currentElement.centerX;
                 const dy = offsetY - currentElement.centerY;
@@ -25569,41 +25569,41 @@ function App() {
     // End drawing
     const endDrawing = ()=>{
         if (!isDrawingRef.current) {
-            setAction('none');
+            setAction("none");
             return;
         }
         isDrawingRef.current = false;
-        setAction('none');
+        setAction("none");
         // Get the last element (the one we just finished drawing)
         const finishedElement = elementsRef.current[elementsRef.current.length - 1];
         // Send to server if it's a valid element
         if (finishedElement && socket && connected) {
-            console.log('Sending drawing element to server:', finishedElement);
+            console.log("Sending drawing element to server:", finishedElement);
             // Add a timestamp if not present
             if (!finishedElement.createdAt) finishedElement.createdAt = new Date().toISOString();
-            socket.emit('draw-element', finishedElement);
+            socket.emit("draw-element", finishedElement);
         }
     };
     // Check if point is inside an element
     const isPointInElement = (x, y, element)=>{
         switch(element.type){
-            case 'line':
+            case "line":
                 // Check if point is near the line
                 const distance = distanceToLine(x, y, element.startX, element.startY, element.endX, element.endY);
                 return distance < 10; // 10px tolerance
-            case 'rectangle':
+            case "rectangle":
                 // Check if point is inside rectangle
                 const minX = Math.min(element.startX, element.startX + element.width);
                 const maxX = Math.max(element.startX, element.startX + element.width);
                 const minY = Math.min(element.startY, element.startY + element.height);
                 const maxY = Math.max(element.startY, element.startY + element.height);
                 return x >= minX && x <= maxX && y >= minY && y <= maxY;
-            case 'circle':
+            case "circle":
                 // Check if point is inside circle
                 const dx = x - element.centerX;
                 const dy = y - element.centerY;
                 return Math.sqrt(dx * dx + dy * dy) <= element.radius;
-            case 'text':
+            case "text":
                 // Check if point is near text (simple box check)
                 const textWidth = contextRef.current.measureText(element.text).width;
                 return x >= element.x && x <= element.x + textWidth && y >= element.y - parseInt(element.font) && y <= element.y;
@@ -25639,25 +25639,25 @@ function App() {
     // Move element by delta
     const moveElement = (element, deltaX, deltaY)=>{
         switch(element.type){
-            case 'line':
+            case "line":
                 element.startX += deltaX;
                 element.startY += deltaY;
                 element.endX += deltaX;
                 element.endY += deltaY;
                 break;
-            case 'rectangle':
+            case "rectangle":
                 element.startX += deltaX;
                 element.startY += deltaY;
                 break;
-            case 'circle':
+            case "circle":
                 element.centerX += deltaX;
                 element.centerY += deltaY;
                 break;
-            case 'text':
+            case "text":
                 element.x += deltaX;
                 element.y += deltaY;
                 break;
-            case 'pencil':
+            case "pencil":
                 element.points = element.points.map((point)=>({
                         x: point.x + deltaX,
                         y: point.y + deltaY
@@ -25674,7 +25674,7 @@ function App() {
         const rect = canvasRef.current.getBoundingClientRect();
         let offsetX, offsetY;
         // Touch event handling
-        if (e.type.includes('touch')) {
+        if (e.type.includes("touch")) {
             const touch = e.touches[0] || e.changedTouches[0];
             if (!touch) return {
                 offsetX: 0,
@@ -25706,11 +25706,11 @@ function App() {
         return;
         // Fallback for any other unknown types that aren't drawable
         const drawableTypes = [
-            'pencil',
-            'line',
-            'rectangle',
-            'circle',
-            'text'
+            "pencil",
+            "line",
+            "rectangle",
+            "circle",
+            "text"
         ];
         if (!drawableTypes.includes(element.type)) // console.warn(`drawElement: Attempted to draw unknown or non-drawable element type: ${element.type}`, element);
         return;
@@ -25718,34 +25718,34 @@ function App() {
         ctx.fillStyle = element.color;
         ctx.lineWidth = element.lineWidth;
         // Ensure globalCompositeOperation is set correctly for normal drawing vs eraser
-        if (element.type === 'pencil' && element.color === '#FFFFFF' && drawingSettings.tool === 'eraser') ;
-        else ctx.globalCompositeOperation = 'source-over';
+        if (element.type === "pencil" && element.color === "#FFFFFF" && drawingSettings.tool === "eraser") ;
+        else ctx.globalCompositeOperation = "source-over";
         switch(element.type){
-            case 'pencil':
+            case "pencil":
                 if (element.points.length < 2) return;
                 ctx.beginPath();
                 ctx.moveTo(element.points[0].x, element.points[0].y);
                 for(let i = 1; i < element.points.length; i++)ctx.lineTo(element.points[i].x, element.points[i].y);
                 ctx.stroke();
                 break;
-            case 'line':
+            case "line":
                 ctx.beginPath();
                 ctx.moveTo(element.startX, element.startY);
                 ctx.lineTo(element.endX, element.endY);
                 ctx.stroke();
                 break;
-            case 'rectangle':
+            case "rectangle":
                 ctx.beginPath();
                 ctx.rect(element.startX, element.startY, element.width, element.height);
                 if (element.fill) ctx.fill();
                 else ctx.stroke();
                 break;
-            case 'circle':
+            case "circle":
                 ctx.beginPath();
                 ctx.arc(element.centerX, element.centerY, element.radius, 0, Math.PI * 2);
                 ctx.stroke();
                 break;
-            case 'text':
+            case "text":
                 ctx.font = element.font;
                 ctx.fillText(element.text, element.x, element.y);
                 break;
@@ -25759,7 +25759,11 @@ function App() {
                 ...newSettings
             };
             // Emit settings change to other clients
-            if (socket && connected) socket.emit('drawing-settings-change', {
+            if (socket && connected) // socket.emit("drawing-settings-change", {
+            //   clientId: clientId,
+            //   settings: newSettings,
+            // });
+            socket.emit("draw", {
                 clientId: clientId,
                 settings: newSettings
             });
@@ -25768,10 +25772,10 @@ function App() {
     };
     // Simplified clearCanvas for global clear only
     const clearCanvas = ()=>{
-        console.log('[clearCanvas] Function called. Attempting global clear. GLOBAL_TYPE:', GLOBAL_CLEAR_COMMAND_TYPE);
+        console.log("[clearCanvas] Function called. Attempting global clear. GLOBAL_TYPE:", GLOBAL_CLEAR_COMMAND_TYPE);
         if (!socket || !socket.connected) {
-            console.error('[clearCanvas] Socket not available or not connected. Cannot send global clear command.');
-            alert('Error: Not connected to server. Cannot clear whiteboard globally.');
+            console.error("[clearCanvas] Socket not available or not connected. Cannot send global clear command.");
+            alert("Error: Not connected to server. Cannot clear whiteboard globally.");
             return;
         }
         console.log(`[clearCanvas] Proceeding to send ${GLOBAL_CLEAR_COMMAND_TYPE} command.`);
@@ -25782,46 +25786,46 @@ function App() {
             userName: userName,
             timestamp: new Date().toISOString()
         };
-        console.log('[clearCanvas] Clear command payload prepared:', JSON.stringify(clearCommandPayload));
-        if (socket && typeof socket.emit === 'function') {
-            socket.emit('draw-element', clearCommandPayload);
+        console.log("[clearCanvas] Clear command payload prepared:", JSON.stringify(clearCommandPayload));
+        if (socket && typeof socket.emit === "function") {
+            socket.emit("draw-element", clearCommandPayload);
             console.log(`[clearCanvas] 'draw-element' event EMITTED with the clear command payload.`);
         } else {
-            console.error('[clearCanvas] CRITICAL: socket object or socket.emit function is not available!');
-            alert('CRITICAL ERROR: Unable to send clear command to server (socket issue).');
+            console.error("[clearCanvas] CRITICAL: socket object or socket.emit function is not available!");
+            alert("CRITICAL ERROR: Unable to send clear command to server (socket issue).");
         }
     };
     // Save canvas as image
     const saveCanvas = ()=>{
         if (!canvasRef.current) return;
         // Create temporary link
-        const link = document.createElement('a');
-        link.download = `whiteboard-${new Date().toISOString().split('T')[0]}.png`;
-        link.href = canvasRef.current.toDataURL('image/png');
+        const link = document.createElement("a");
+        link.download = `whiteboard-${new Date().toISOString().split("T")[0]}.png`;
+        link.href = canvasRef.current.toDataURL("image/png");
         link.click();
     };
     // Generate random color
     const getRandomColor = ()=>{
         const colors = [
-            '#3498db',
-            '#e74c3c',
-            '#2ecc71',
-            '#f39c12',
-            '#9b59b6',
-            '#1abc9c',
-            '#d35400',
-            '#34495e',
-            '#c0392b',
-            '#16a085'
+            "#3498db",
+            "#e74c3c",
+            "#2ecc71",
+            "#f39c12",
+            "#9b59b6",
+            "#1abc9c",
+            "#d35400",
+            "#34495e",
+            "#c0392b",
+            "#16a085"
         ];
         return colors[Math.floor(Math.random() * colors.length)];
     };
     // Add a new useEffect for loading from local storage on initial render
     (0, _react.useEffect)(()=>{
         // Attempt to restore from local storage when component mounts
-        const storedElements = localStorage.getItem('whiteboard_elements');
-        const backupImage = localStorage.getItem('whiteboard_backup');
-        const backupTime = localStorage.getItem('whiteboard_backup_time');
+        const storedElements = localStorage.getItem("whiteboard_elements");
+        const backupImage = localStorage.getItem("whiteboard_backup");
+        const backupTime = localStorage.getItem("whiteboard_backup_time");
         if (storedElements || backupImage) {
             // If we have both, show a confirm dialog to choose which to restore
             if (storedElements && backupImage && confirm(`Unsaved drawing data found from ${new Date(backupTime).toLocaleString()}. Would you like to restore it?`)) try {
@@ -25836,14 +25840,14 @@ function App() {
                             elementsRef.current = parsedElements;
                             redrawCanvas();
                             // Clear storage after successful restore
-                            localStorage.removeItem('whiteboard_elements');
-                            localStorage.removeItem('whiteboard_backup');
-                            localStorage.removeItem('whiteboard_backup_time');
+                            localStorage.removeItem("whiteboard_elements");
+                            localStorage.removeItem("whiteboard_backup");
+                            localStorage.removeItem("whiteboard_backup_time");
                         }
                     }, 100);
                 }
             } catch (error) {
-                console.error('Failed to restore elements from local storage:', error);
+                console.error("Failed to restore elements from local storage:", error);
                 // Fall back to image backup if available
                 if (backupImage && canvasRef.current && contextRef.current) {
                     const img = new Image();
@@ -25859,31 +25863,31 @@ function App() {
     // Add connection diagnostic function
     const diagnoseConnection = ()=>{
         if (!socket) {
-            setConnectionError('No socket connection established. Please check your server URL.');
+            setConnectionError("No socket connection established. Please check your server URL.");
             return;
         }
-        console.log('Running connection diagnostics...');
+        console.log("Running connection diagnostics...");
         // Check if socket is connected
         if (!socket.connected) {
-            setConnectionError('Socket is not connected. Attempting to reconnect...');
+            setConnectionError("Socket is not connected. Attempting to reconnect...");
             socket.connect();
             return;
         }
         // Ping server to check connection
         const pingStart = Date.now();
-        socket.emit('ping', {}, ()=>{
+        socket.emit("ping", {}, ()=>{
             const pingTime = Date.now() - pingStart;
             console.log(`Server ping time: ${pingTime}ms`);
             if (pingTime > 500) setConnectionError(`High latency detected (${pingTime}ms). This may cause synchronization delays.`);
             else {
                 setConnectionError(null);
-                console.log('Connection diagnostics passed');
+                console.log("Connection diagnostics passed");
             }
         });
         // Check if we're missing users
         if (Object.keys(connectedUsers).length === 0) {
-            console.log('No users detected. Requesting users list update...');
-            socket.emit('request-initial-state');
+            console.log("No users detected. Requesting users list update...");
+            socket.emit("request-initial-state");
         }
     };
     // Add an automatic saving function
@@ -25891,10 +25895,10 @@ function App() {
         // Auto-save to local storage every 30 seconds if we have elements
         const autoSaveInterval = setInterval(()=>{
             if (elementsRef.current.length > 0) try {
-                localStorage.setItem('whiteboard_autosave', JSON.stringify(elementsRef.current));
-                console.log('Auto-saved drawings to local storage');
+                localStorage.setItem("whiteboard_autosave", JSON.stringify(elementsRef.current));
+                console.log("Auto-saved drawings to local storage");
             } catch (error) {
-                console.error('Failed to auto-save drawings:', error);
+                console.error("Failed to auto-save drawings:", error);
             }
         }, 30000);
         return ()=>clearInterval(autoSaveInterval);
@@ -25910,15 +25914,16 @@ function App() {
                 onDiagnose: diagnoseConnection
             }, void 0, false, {
                 fileName: "src/App.js",
-                lineNumber: 1069,
+                lineNumber: 1222,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _networkInfoDefault.default), {
                 connected: connected,
+                serverUrl: serverUrl,
                 clientId: clientId
             }, void 0, false, {
                 fileName: "src/App.js",
-                lineNumber: 1076,
+                lineNumber: 1229,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("header", {
@@ -25934,7 +25939,7 @@ function App() {
                                     children: "Collaborative Whiteboard"
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 1081,
+                                    lineNumber: 1238,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
@@ -25947,26 +25952,26 @@ function App() {
                                                     className: "bi bi-person-circle me-1"
                                                 }, void 0, false, {
                                                     fileName: "src/App.js",
-                                                    lineNumber: 1084,
+                                                    lineNumber: 1241,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                                                     className: "cursor-pointer",
                                                     onClick: ()=>{
-                                                        const newName = prompt('Enter your name:', userName);
+                                                        const newName = prompt("Enter your name:", userName);
                                                         if (newName && newName.trim()) handleUserNameChange(newName);
                                                     },
                                                     title: "Click to change name",
                                                     children: userName
                                                 }, void 0, false, {
                                                     fileName: "src/App.js",
-                                                    lineNumber: 1085,
+                                                    lineNumber: 1242,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/App.js",
-                                            lineNumber: 1083,
+                                            lineNumber: 1240,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
@@ -25976,7 +25981,7 @@ function App() {
                                                     className: "bi bi-people-fill me-1"
                                                 }, void 0, false, {
                                                     fileName: "src/App.js",
-                                                    lineNumber: 1097,
+                                                    lineNumber: 1255,
                                                     columnNumber: 17
                                                 }, this),
                                                 Object.keys(connectedUsers).length || 0,
@@ -25984,19 +25989,19 @@ function App() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/App.js",
-                                            lineNumber: 1096,
+                                            lineNumber: 1254,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/App.js",
-                                    lineNumber: 1082,
+                                    lineNumber: 1239,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/App.js",
-                            lineNumber: 1080,
+                            lineNumber: 1237,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -26006,23 +26011,23 @@ function App() {
                                 currentUserId: clientId
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 1103,
+                                lineNumber: 1261,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "src/App.js",
-                            lineNumber: 1102,
+                            lineNumber: 1260,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/App.js",
-                    lineNumber: 1079,
+                    lineNumber: 1236,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "src/App.js",
-                lineNumber: 1078,
+                lineNumber: 1235,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _whiteboardToolbarDefault.default), {
@@ -26032,7 +26037,7 @@ function App() {
                 onSave: saveCanvas
             }, void 0, false, {
                 fileName: "src/App.js",
-                lineNumber: 1108,
+                lineNumber: 1266,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -26041,6 +26046,8 @@ function App() {
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("canvas", {
                         id: "whiteboard",
                         ref: canvasRef,
+                        width: 1600,
+                        height: 1200,
                         onMouseDown: startDrawing,
                         onMouseMove: draw,
                         onMouseUp: endDrawing,
@@ -26050,24 +26057,34 @@ function App() {
                         },
                         onTouchStart: startDrawing,
                         onTouchMove: draw,
-                        onTouchEnd: endDrawing
+                        onTouchEnd: endDrawing,
+                        style: {
+                            backgroundColor: "white",
+                            display: "block"
+                        }
                     }, void 0, false, {
                         fileName: "src/App.js",
-                        lineNumber: 1116,
+                        lineNumber: 1274,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _userCursorsDefault.default), {
                         cursors: cursors
                     }, void 0, false, {
                         fileName: "src/App.js",
-                        lineNumber: 1131,
+                        lineNumber: 1291,
                         columnNumber: 9
                     }, this),
                     showTooltip && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                         className: "position-tooltip",
                         style: {
                             left: position.x + 15,
-                            top: position.y - 25
+                            top: position.y - 25,
+                            position: "absolute",
+                            backgroundColor: "black",
+                            color: "white",
+                            padding: "2px 6px",
+                            borderRadius: "4px",
+                            fontSize: "12px"
                         },
                         children: [
                             "x: ",
@@ -26077,13 +26094,13 @@ function App() {
                         ]
                     }, void 0, true, {
                         fileName: "src/App.js",
-                        lineNumber: 1134,
+                        lineNumber: 1294,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "src/App.js",
-                lineNumber: 1115,
+                lineNumber: 1273,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -26093,24 +26110,24 @@ function App() {
                         className: "bi bi-broadcast me-1"
                     }, void 0, false, {
                         fileName: "src/App.js",
-                        lineNumber: 1147,
+                        lineNumber: 1313,
                         columnNumber: 9
                     }, this),
-                    connected ? 'Real-time collaboration active' : 'Offline mode'
+                    connected ? "Real-time collaboration active" : "Offline mode"
                 ]
             }, void 0, true, {
                 fileName: "src/App.js",
-                lineNumber: 1146,
+                lineNumber: 1312,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/App.js",
-        lineNumber: 1068,
+        lineNumber: 1221,
         columnNumber: 5
     }, this);
 }
-_s(App, "ingkjY3UpQ1Nrns39RI3FN/IOpE=");
+_s(App, "z4vFZIm40tccoZxfWfHxOK+xFFI=");
 _c = App;
 exports.default = App;
 // Add throttle and debounce functions
@@ -32272,79 +32289,79 @@ var _s = $RefreshSig$();
 const WhiteboardToolbar = ({ settings, onSettingsChange, onClear, onSave })=>{
     _s();
     const [showPalette, setShowPalette] = (0, _react.useState)(false);
-    const [customColor, setCustomColor] = (0, _react.useState)('#000000');
+    const [customColor, setCustomColor] = (0, _react.useState)("#000000");
     const tools = [
         {
-            id: 'pencil',
+            id: "pencil",
             icon: "\u270F\uFE0F",
-            label: 'Pencil'
+            label: "Pencil"
         },
         {
-            id: 'line',
+            id: "line",
             icon: "\u2796",
-            label: 'Line'
+            label: "Line"
         },
         {
-            id: 'rectangle',
+            id: "rectangle",
             icon: "\uD83D\uDD32",
-            label: 'Rectangle'
+            label: "Rectangle"
         },
         {
-            id: 'circle',
+            id: "circle",
             icon: "\u2B55",
-            label: 'Circle'
+            label: "Circle"
         },
         {
-            id: 'eraser',
+            id: "eraser",
             icon: "\uD83E\uDDFD",
-            label: 'Eraser'
+            label: "Eraser"
         },
         {
-            id: 'text',
+            id: "text",
             icon: "\uD83D\uDD24",
-            label: 'Text'
+            label: "Text"
         }
     ];
     const colors = [
         {
-            color: '#000000',
-            name: 'Black'
+            color: "#000000",
+            name: "Black"
         },
         {
-            color: '#FFFFFF',
-            name: 'White'
+            color: "#FFFFFF",
+            name: "White"
         },
         {
-            color: '#FF0000',
-            name: 'Red'
+            color: "#FF0000",
+            name: "Red"
         },
         {
-            color: '#00FF00',
-            name: 'Green'
+            color: "#00FF00",
+            name: "Green"
         },
         {
-            color: '#0000FF',
-            name: 'Blue'
+            color: "#0000FF",
+            name: "Blue"
         },
         {
-            color: '#FFFF00',
-            name: 'Yellow'
+            color: "#FFFF00",
+            name: "Yellow"
         },
         {
-            color: '#FF00FF',
-            name: 'Magenta'
+            color: "#FF00FF",
+            name: "Magenta"
         },
         {
-            color: '#00FFFF',
-            name: 'Cyan'
+            color: "#00FFFF",
+            name: "Cyan"
         },
         {
-            color: '#FFA500',
-            name: 'Orange'
+            color: "#FFA500",
+            name: "Orange"
         },
         {
-            color: '#800080',
-            name: 'Purple'
+            color: "#800080",
+            name: "Purple"
         }
     ];
     const lineWidths = [
@@ -32363,118 +32380,108 @@ const WhiteboardToolbar = ({ settings, onSettingsChange, onClear, onSave })=>{
         });
         setShowPalette(false);
     };
-    const saveCanvas = ()=>{
-        if (onSave) onSave();
-    };
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
         className: "toolbar-container",
         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-            className: "toolbar bg-white border rounded shadow-sm p-3 mb-3",
+            className: "toolbar bg-white border rounded shadow-sm p-4 mb-4",
             children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 className: "container-fluid",
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                        className: "row align-items-center",
+                        className: "row mb-3",
                         children: [
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                className: "col-md-4 mb-2 mb-md-0",
-                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                    className: "d-flex flex-wrap",
-                                    children: [
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
-                                            className: "w-100 mb-1 fw-bold",
-                                            children: "Tools"
-                                        }, void 0, false, {
-                                            fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 52,
-                                            columnNumber: 17
-                                        }, undefined),
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                            className: "btn-group",
-                                            role: "group",
-                                            children: tools.map((tool)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                                                    type: "button",
-                                                    className: `btn ${settings.tool === tool.id ? 'btn-primary' : 'btn-outline-secondary'}`,
-                                                    onClick: ()=>onSettingsChange({
-                                                            tool: tool.id
-                                                        }),
-                                                    title: tool.label,
-                                                    children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
-                                                        style: {
-                                                            fontSize: '1.2rem'
-                                                        },
-                                                        children: tool.icon
-                                                    }, void 0, false, {
-                                                        fileName: "src/components/WhiteboardToolbar.js",
-                                                        lineNumber: 62,
-                                                        columnNumber: 23
-                                                    }, undefined)
-                                                }, tool.id, false, {
+                                className: "col-md-4 mb-3",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
+                                        className: "text-uppercase fw-bold small text-muted mb-2",
+                                        children: "Tools"
+                                    }, void 0, false, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 47,
+                                        columnNumber: 15
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "btn-group flex-wrap",
+                                        role: "group",
+                                        children: tools.map((tool)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                                                type: "button",
+                                                className: `btn ${settings.tool === tool.id ? "btn-primary" : "btn-outline-secondary"}`,
+                                                onClick: ()=>onSettingsChange({
+                                                        tool: tool.id
+                                                    }),
+                                                title: tool.label,
+                                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
+                                                    style: {
+                                                        fontSize: "1.2rem"
+                                                    },
+                                                    children: tool.icon
+                                                }, void 0, false, {
                                                     fileName: "src/components/WhiteboardToolbar.js",
-                                                    lineNumber: 55,
+                                                    lineNumber: 63,
                                                     columnNumber: 21
-                                                }, undefined))
-                                        }, void 0, false, {
-                                            fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 53,
-                                            columnNumber: 17
-                                        }, undefined)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "src/components/WhiteboardToolbar.js",
-                                    lineNumber: 51,
-                                    columnNumber: 15
-                                }, undefined)
-                            }, void 0, false, {
+                                                }, undefined)
+                                            }, tool.id, false, {
+                                                fileName: "src/components/WhiteboardToolbar.js",
+                                                lineNumber: 52,
+                                                columnNumber: 19
+                                            }, undefined))
+                                    }, void 0, false, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 50,
+                                        columnNumber: 15
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
                                 fileName: "src/components/WhiteboardToolbar.js",
-                                lineNumber: 50,
+                                lineNumber: 46,
                                 columnNumber: 13
                             }, undefined),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                className: "col-md-5 mb-2 mb-md-0",
-                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                    className: "d-flex flex-column",
-                                    children: [
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
-                                            className: "mb-1 fw-bold",
-                                            children: "Color"
-                                        }, void 0, false, {
-                                            fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 72,
-                                            columnNumber: 17
-                                        }, undefined),
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                            className: "d-flex align-items-center",
+                                className: "col-md-5 mb-3",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
+                                        className: "text-uppercase fw-bold small text-muted mb-2",
+                                        children: "Color"
+                                    }, void 0, false, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 71,
+                                        columnNumber: 15
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "d-flex align-items-start flex-wrap",
+                                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                            className: "d-flex flex-wrap me-3",
+                                            style: {
+                                                maxWidth: "200px"
+                                            },
                                             children: [
+                                                colors.map(({ color, name })=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                                                        className: "me-1 mb-1",
+                                                        style: {
+                                                            backgroundColor: color,
+                                                            width: "24px",
+                                                            height: "24px",
+                                                            borderRadius: "50%",
+                                                            border: settings.color === color ? "2px solid #333" : "1px solid #ccc",
+                                                            cursor: "pointer",
+                                                            transition: "transform 0.2s ease-in-out"
+                                                        },
+                                                        onClick: ()=>onSettingsChange({
+                                                                color
+                                                            }),
+                                                        title: name,
+                                                        onMouseOver: (e)=>e.currentTarget.style.transform = "scale(1.2)",
+                                                        onMouseOut: (e)=>e.currentTarget.style.transform = "scale(1)"
+                                                    }, color, false, {
+                                                        fileName: "src/components/WhiteboardToolbar.js",
+                                                        lineNumber: 80,
+                                                        columnNumber: 21
+                                                    }, undefined)),
                                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                                    className: "me-2 d-flex flex-wrap",
                                                     style: {
-                                                        maxWidth: '200px'
+                                                        marginLeft: "15%"
                                                     },
-                                                    children: colors.map(({ color, name })=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                                                            className: "color-picker me-1 mb-1",
-                                                            style: {
-                                                                backgroundColor: color,
-                                                                width: '24px',
-                                                                height: '24px',
-                                                                borderRadius: '50%',
-                                                                border: settings.color === color ? '2px solid #333' : '1px solid #ccc'
-                                                            },
-                                                            onClick: ()=>onSettingsChange({
-                                                                    color
-                                                                }),
-                                                            title: name
-                                                        }, color, false, {
-                                                            fileName: "src/components/WhiteboardToolbar.js",
-                                                            lineNumber: 76,
-                                                            columnNumber: 23
-                                                        }, undefined))
-                                                }, void 0, false, {
-                                                    fileName: "src/components/WhiteboardToolbar.js",
-                                                    lineNumber: 74,
-                                                    columnNumber: 19
-                                                }, undefined),
-                                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                                                     children: [
                                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
                                                             className: "btn btn-sm btn-outline-secondary",
@@ -32482,186 +32489,190 @@ const WhiteboardToolbar = ({ settings, onSettingsChange, onClear, onSave })=>{
                                                             children: "Custom"
                                                         }, void 0, false, {
                                                             fileName: "src/components/WhiteboardToolbar.js",
-                                                            lineNumber: 92,
+                                                            lineNumber: 106,
                                                             columnNumber: 21
                                                         }, undefined),
                                                         showPalette && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                                            className: "position-absolute bg-white p-2 border rounded shadow-sm mt-1",
-                                                            children: [
-                                                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
-                                                                    type: "color",
-                                                                    value: customColor,
-                                                                    onChange: handleCustomColorChange,
-                                                                    className: "form-control mb-2",
-                                                                    style: {
-                                                                        width: '100px',
-                                                                        height: '40px'
-                                                                    }
-                                                                }, void 0, false, {
-                                                                    fileName: "src/components/WhiteboardToolbar.js",
-                                                                    lineNumber: 100,
-                                                                    columnNumber: 25
-                                                                }, undefined),
-                                                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                                                                    className: "btn btn-sm btn-primary w-100",
-                                                                    onClick: applyCustomColor,
-                                                                    children: "Apply"
-                                                                }, void 0, false, {
-                                                                    fileName: "src/components/WhiteboardToolbar.js",
-                                                                    lineNumber: 107,
-                                                                    columnNumber: 25
-                                                                }, undefined)
-                                                            ]
-                                                        }, void 0, true, {
+                                                            className: "position-relative mt-2",
+                                                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                                                className: "position-absolute bg-white p-3 border rounded shadow-sm",
+                                                                style: {
+                                                                    zIndex: 10
+                                                                },
+                                                                children: [
+                                                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("input", {
+                                                                        type: "color",
+                                                                        value: customColor,
+                                                                        onChange: handleCustomColorChange,
+                                                                        className: "form-control mb-2",
+                                                                        style: {
+                                                                            width: "100px",
+                                                                            height: "40px"
+                                                                        }
+                                                                    }, void 0, false, {
+                                                                        fileName: "src/components/WhiteboardToolbar.js",
+                                                                        lineNumber: 118,
+                                                                        columnNumber: 27
+                                                                    }, undefined),
+                                                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                                                                        className: "btn btn-sm btn-primary w-100",
+                                                                        onClick: applyCustomColor,
+                                                                        children: "Apply"
+                                                                    }, void 0, false, {
+                                                                        fileName: "src/components/WhiteboardToolbar.js",
+                                                                        lineNumber: 125,
+                                                                        columnNumber: 27
+                                                                    }, undefined)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "src/components/WhiteboardToolbar.js",
+                                                                lineNumber: 114,
+                                                                columnNumber: 25
+                                                            }, undefined)
+                                                        }, void 0, false, {
                                                             fileName: "src/components/WhiteboardToolbar.js",
-                                                            lineNumber: 99,
+                                                            lineNumber: 113,
                                                             columnNumber: 23
                                                         }, undefined)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "src/components/WhiteboardToolbar.js",
-                                                    lineNumber: 91,
+                                                    lineNumber: 105,
                                                     columnNumber: 19
                                                 }, undefined)
                                             ]
                                         }, void 0, true, {
                                             fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 73,
+                                            lineNumber: 75,
                                             columnNumber: 17
                                         }, undefined)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "src/components/WhiteboardToolbar.js",
-                                    lineNumber: 71,
-                                    columnNumber: 15
-                                }, undefined)
-                            }, void 0, false, {
+                                    }, void 0, false, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 74,
+                                        columnNumber: 15
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
                                 fileName: "src/components/WhiteboardToolbar.js",
                                 lineNumber: 70,
-                                columnNumber: 13
-                            }, undefined),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                className: "col-md-3",
-                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                    className: "d-flex flex-column",
-                                    children: [
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
-                                            className: "mb-1 fw-bold",
-                                            children: "Line Width"
-                                        }, void 0, false, {
-                                            fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 123,
-                                            columnNumber: 17
-                                        }, undefined),
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                                            className: "d-flex align-items-center flex-wrap",
-                                            children: lineWidths.map((width)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                                                    className: `btn btn-sm me-1 mb-1 ${settings.lineWidth === width ? 'btn-primary' : 'btn-outline-secondary'}`,
-                                                    onClick: ()=>onSettingsChange({
-                                                            lineWidth: width
-                                                        }),
-                                                    style: {
-                                                        width: '30px',
-                                                        padding: '0.25rem'
-                                                    },
-                                                    children: width
-                                                }, width, false, {
-                                                    fileName: "src/components/WhiteboardToolbar.js",
-                                                    lineNumber: 126,
-                                                    columnNumber: 21
-                                                }, undefined))
-                                        }, void 0, false, {
-                                            fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 124,
-                                            columnNumber: 17
-                                        }, undefined)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "src/components/WhiteboardToolbar.js",
-                                    lineNumber: 122,
-                                    columnNumber: 15
-                                }, undefined)
-                            }, void 0, false, {
-                                fileName: "src/components/WhiteboardToolbar.js",
-                                lineNumber: 121,
                                 columnNumber: 13
                             }, undefined)
                         ]
                     }, void 0, true, {
                         fileName: "src/components/WhiteboardToolbar.js",
-                        lineNumber: 48,
+                        lineNumber: 44,
                         columnNumber: 11
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                        className: "row mt-3",
-                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
-                            className: "col-12 d-flex justify-content-end",
-                            children: [
-                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                                    className: "btn btn-success me-2",
-                                    onClick: saveCanvas,
-                                    children: [
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("i", {
-                                            className: "bi bi-download me-1"
-                                        }, void 0, false, {
-                                            fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 147,
-                                            columnNumber: 17
-                                        }, undefined),
-                                        " Save"
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "src/components/WhiteboardToolbar.js",
-                                    lineNumber: 143,
-                                    columnNumber: 15
-                                }, undefined),
-                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                                    className: "btn btn-warning me-2",
-                                    onClick: ()=>onSettingsChange({
-                                            tool: 'select'
-                                        }),
-                                    title: "Select elements",
-                                    children: [
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("i", {
-                                            className: "bi bi-select"
-                                        }, void 0, false, {
-                                            fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 154,
-                                            columnNumber: 17
-                                        }, undefined),
-                                        " Select"
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "src/components/WhiteboardToolbar.js",
-                                    lineNumber: 149,
-                                    columnNumber: 15
-                                }, undefined),
-                                /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                                    className: "btn btn-danger",
-                                    onClick: onClear,
-                                    title: "Clear the entire whiteboard for all users",
-                                    children: [
-                                        /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("i", {
-                                            className: "bi bi-trash me-1"
-                                        }, void 0, false, {
-                                            fileName: "src/components/WhiteboardToolbar.js",
-                                            lineNumber: 161,
-                                            columnNumber: 17
-                                        }, undefined),
-                                        " Clear Whiteboard"
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "src/components/WhiteboardToolbar.js",
-                                    lineNumber: 156,
-                                    columnNumber: 15
-                                }, undefined)
-                            ]
-                        }, void 0, true, {
-                            fileName: "src/components/WhiteboardToolbar.js",
-                            lineNumber: 142,
-                            columnNumber: 13
-                        }, undefined)
-                    }, void 0, false, {
+                        className: "row align-items-center",
+                        children: [
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                className: "col-md-3 mb-3",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("label", {
+                                        className: "text-uppercase fw-bold small text-muted mb-2",
+                                        children: "Line Width"
+                                    }, void 0, false, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 144,
+                                        columnNumber: 15
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "d-flex flex-wrap",
+                                        children: lineWidths.map((width)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                                                className: `btn btn-sm me-1 mb-1 ${settings.lineWidth === width ? "btn-primary" : "btn-outline-secondary"}`,
+                                                onClick: ()=>onSettingsChange({
+                                                        lineWidth: width
+                                                    }),
+                                                style: {
+                                                    width: "34px"
+                                                },
+                                                children: width
+                                            }, width, false, {
+                                                fileName: "src/components/WhiteboardToolbar.js",
+                                                lineNumber: 149,
+                                                columnNumber: 19
+                                            }, undefined))
+                                    }, void 0, false, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 147,
+                                        columnNumber: 15
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/WhiteboardToolbar.js",
+                                lineNumber: 143,
+                                columnNumber: 13
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                className: "col-md-9 text-end",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                                        className: "btn btn-success me-2",
+                                        onClick: onSave,
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("i", {
+                                                className: "bi bi-download me-1"
+                                            }, void 0, false, {
+                                                fileName: "src/components/WhiteboardToolbar.js",
+                                                lineNumber: 168,
+                                                columnNumber: 17
+                                            }, undefined),
+                                            " Save"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 167,
+                                        columnNumber: 15
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                                        className: "btn btn-warning me-2",
+                                        onClick: ()=>onSettingsChange({
+                                                tool: "select"
+                                            }),
+                                        title: "Select",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("i", {
+                                                className: "bi bi-cursor me-1"
+                                            }, void 0, false, {
+                                                fileName: "src/components/WhiteboardToolbar.js",
+                                                lineNumber: 175,
+                                                columnNumber: 17
+                                            }, undefined),
+                                            " Select"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 170,
+                                        columnNumber: 15
+                                    }, undefined),
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+                                        className: "btn btn-danger",
+                                        onClick: onClear,
+                                        title: "Clear Whiteboard",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("i", {
+                                                className: "bi bi-trash me-1"
+                                            }, void 0, false, {
+                                                fileName: "src/components/WhiteboardToolbar.js",
+                                                lineNumber: 182,
+                                                columnNumber: 17
+                                            }, undefined),
+                                            " Clear"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/WhiteboardToolbar.js",
+                                        lineNumber: 177,
+                                        columnNumber: 15
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/WhiteboardToolbar.js",
+                                lineNumber: 166,
+                                columnNumber: 13
+                            }, undefined)
+                        ]
+                    }, void 0, true, {
                         fileName: "src/components/WhiteboardToolbar.js",
                         lineNumber: 141,
                         columnNumber: 11
@@ -32669,21 +32680,21 @@ const WhiteboardToolbar = ({ settings, onSettingsChange, onClear, onSave })=>{
                 ]
             }, void 0, true, {
                 fileName: "src/components/WhiteboardToolbar.js",
-                lineNumber: 47,
+                lineNumber: 43,
                 columnNumber: 9
             }, undefined)
         }, void 0, false, {
             fileName: "src/components/WhiteboardToolbar.js",
-            lineNumber: 46,
+            lineNumber: 42,
             columnNumber: 7
         }, undefined)
     }, void 0, false, {
         fileName: "src/components/WhiteboardToolbar.js",
-        lineNumber: 45,
+        lineNumber: 41,
         columnNumber: 5
     }, undefined);
 };
-_s(WhiteboardToolbar, "vnc0NW1o3ky4lz/C7+rgubsex3Y=");
+_s(WhiteboardToolbar, "bT1rFMKdPr/KXhu0Z3E8FybsZOE=");
 _c = WhiteboardToolbar;
 exports.default = WhiteboardToolbar;
 var _c;
@@ -32710,81 +32721,81 @@ var _reactDefault = parcelHelpers.interopDefault(_react);
 var _networkDiagnostic = require("./NetworkDiagnostic");
 var _networkDiagnosticDefault = parcelHelpers.interopDefault(_networkDiagnostic);
 var _s = $RefreshSig$();
-const NetworkInfo = ({ serverId = null, connected = false, clientId = null })=>{
+const NetworkInfo = ({ serverId = null, connected = false, clientId = null, serverUrl = "172.20.10.2:5000" })=>{
     _s();
     const [showInfo, setShowInfo] = (0, _react.useState)(false);
-    const [clientIP, setClientIP] = (0, _react.useState)('');
+    const [publicIP, setPublicIP] = (0, _react.useState)("");
     const [localIPs, setLocalIPs] = (0, _react.useState)([]);
-    const clientPort = 1234; // Default Parcel port
-    // Add serverUrl below localIPs const
-    const serverUrl = '172.20.10.2:5000';
+    const clientPort = 1234;
     (0, _react.useEffect)(()=>{
-        // Try to get client IP addresses
         const getIPs = async ()=>{
             try {
-                // Get public IP
-                const response = await fetch('https://api.ipify.org?format=json');
+                const response = await fetch("https://api.ipify.org?format=json");
                 const data = await response.json();
-                setClientIP(data.ip);
-                // Try to get local IPs using WebRTC
+                setPublicIP(data.ip);
                 getLocalIPAddresses();
             } catch (error) {
-                console.error('Failed to get IP address:', error);
-                setClientIP('Could not determine IP address');
+                console.error("Failed to get IPs:", error);
+                setPublicIP("Could not determine public IP");
             }
         };
-        // Function to get local IPs using WebRTC
         const getLocalIPAddresses = ()=>{
-            const ips = [];
-            // Create dummy RTCPeerConnection
             const pc = new RTCPeerConnection({
                 iceServers: []
             });
-            // Listen for candidate events
+            const ips = [];
             pc.onicecandidate = (event)=>{
                 if (!event.candidate) return;
                 const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
                 const match = ipRegex.exec(event.candidate.candidate);
-                if (match && match[1] && !ips.includes(match[1])) {
-                    ips.push(match[1]);
-                    setLocalIPs([
-                        ...ips
-                    ]);
+                if (match && match[1]) {
+                    const ip = match[1];
+                    if (ip.startsWith("192.168.") || ip.startsWith("10.")) {
+                        if (!ips.includes(ip)) {
+                            ips.push(ip);
+                            setLocalIPs([
+                                ...ips
+                            ]);
+                        }
+                    }
                 }
             };
-            // Create data channel and create offer to generate candidates
-            pc.createDataChannel('');
-            pc.createOffer().then((offer)=>pc.setLocalDescription(offer)).catch((err)=>console.error('WebRTC error:', err));
+            pc.createDataChannel("");
+            pc.createOffer().then((offer)=>pc.setLocalDescription(offer)).catch((err)=>console.error("WebRTC error:", err));
         };
         if (showInfo) getIPs();
     }, [
         showInfo
     ]);
+    const filteredLocalIPs = localIPs.filter((ip)=>{
+        const parts = ip.split(".").map(Number);
+        return !(parts[0] !== 10 && !(parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) && !(parts[0] === 192 && parts[1] === 168));
+    });
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
         className: "network-info",
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
                 className: "btn btn-sm btn-info position-fixed",
                 style: {
-                    top: '10px',
-                    left: '10px',
+                    top: "10px",
+                    left: "10px",
                     zIndex: 1000
                 },
                 onClick: ()=>setShowInfo(!showInfo),
-                children: showInfo ? 'Hide Network Info' : 'Show Network Info'
+                children: showInfo ? "Hide Network Info" : "Show Network Info"
             }, void 0, false, {
                 fileName: "src/components/NetworkInfo.js",
-                lineNumber: 66,
+                lineNumber: 69,
                 columnNumber: 7
             }, undefined),
             showInfo && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                 className: "card position-fixed",
                 style: {
-                    top: '50px',
-                    left: '10px',
-                    width: '350px',
+                    top: "50px",
+                    left: "10px",
+                    width: "350px",
                     zIndex: 1000,
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
                 },
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -32794,40 +32805,34 @@ const NetworkInfo = ({ serverId = null, connected = false, clientId = null })=>{
                             children: "Network Information"
                         }, void 0, false, {
                             fileName: "src/components/NetworkInfo.js",
-                            lineNumber: 86,
+                            lineNumber: 89,
                             columnNumber: 13
                         }, undefined)
                     }, void 0, false, {
                         fileName: "src/components/NetworkInfo.js",
-                        lineNumber: 85,
+                        lineNumber: 88,
                         columnNumber: 11
                     }, undefined),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                         className: "card-body",
                         children: [
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
-                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("strong", {
-                                    children: "For others to connect:"
-                                }, void 0, false, {
-                                    fileName: "src/components/NetworkInfo.js",
-                                    lineNumber: 89,
-                                    columnNumber: 16
-                                }, undefined)
-                            }, void 0, false, {
-                                fileName: "src/components/NetworkInfo.js",
-                                lineNumber: 89,
-                                columnNumber: 13
-                            }, undefined),
-                            localIPs.length > 0 && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                className: "mb-3",
                                 children: [
                                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
-                                        children: "Share one of these URLs with others on your network:"
+                                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("strong", {
+                                            children: "For local network connections:"
+                                        }, void 0, false, {
+                                            fileName: "src/components/NetworkInfo.js",
+                                            lineNumber: 94,
+                                            columnNumber: 17
+                                        }, undefined)
                                     }, void 0, false, {
                                         fileName: "src/components/NetworkInfo.js",
                                         lineNumber: 93,
-                                        columnNumber: 17
+                                        columnNumber: 15
                                     }, undefined),
-                                    localIPs.map((ip, index)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("code", {
+                                    filteredLocalIPs.length > 0 ? filteredLocalIPs.map((ip, index)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("code", {
                                             className: "d-block bg-light p-2 mb-2",
                                             children: [
                                                 "http://",
@@ -32837,29 +32842,89 @@ const NetworkInfo = ({ serverId = null, connected = false, clientId = null })=>{
                                             ]
                                         }, index, true, {
                                             fileName: "src/components/NetworkInfo.js",
-                                            lineNumber: 95,
+                                            lineNumber: 98,
                                             columnNumber: 19
-                                        }, undefined))
-                                ]
-                            }, void 0, true),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
-                                children: "External IP (for internet connections):"
-                            }, void 0, false, {
-                                fileName: "src/components/NetworkInfo.js",
-                                lineNumber: 102,
-                                columnNumber: 13
-                            }, undefined),
-                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("code", {
-                                className: "d-block bg-light p-2 mb-3",
-                                children: [
-                                    "http://",
-                                    clientIP,
-                                    ":",
-                                    clientPort
+                                        }, undefined)) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "alert alert-warning p-2",
+                                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("small", {
+                                            children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("code", {
+                                                children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("code", {
+                                                    children: [
+                                                        serverUrl.split("5000")[0],
+                                                        clientPort
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "src/components/NetworkInfo.js",
+                                                    lineNumber: 106,
+                                                    columnNumber: 23
+                                                }, undefined)
+                                            }, void 0, false, {
+                                                fileName: "src/components/NetworkInfo.js",
+                                                lineNumber: 105,
+                                                columnNumber: 21
+                                            }, undefined)
+                                        }, void 0, false, {
+                                            fileName: "src/components/NetworkInfo.js",
+                                            lineNumber: 104,
+                                            columnNumber: 19
+                                        }, undefined)
+                                    }, void 0, false, {
+                                        fileName: "src/components/NetworkInfo.js",
+                                        lineNumber: 103,
+                                        columnNumber: 17
+                                    }, undefined)
                                 ]
                             }, void 0, true, {
                                 fileName: "src/components/NetworkInfo.js",
-                                lineNumber: 103,
+                                lineNumber: 92,
+                                columnNumber: 13
+                            }, undefined),
+                            /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                className: "mb-3",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
+                                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("strong", {
+                                            children: "For internet connections:"
+                                        }, void 0, false, {
+                                            fileName: "src/components/NetworkInfo.js",
+                                            lineNumber: 118,
+                                            columnNumber: 17
+                                        }, undefined)
+                                    }, void 0, false, {
+                                        fileName: "src/components/NetworkInfo.js",
+                                        lineNumber: 117,
+                                        columnNumber: 15
+                                    }, undefined),
+                                    publicIP ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("code", {
+                                        className: "d-block bg-light p-2 mb-2",
+                                        children: [
+                                            "http://",
+                                            publicIP,
+                                            ":",
+                                            clientPort
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/NetworkInfo.js",
+                                        lineNumber: 121,
+                                        columnNumber: 17
+                                    }, undefined) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
+                                        className: "alert alert-warning p-2",
+                                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("small", {
+                                            children: "Could not determine public IP"
+                                        }, void 0, false, {
+                                            fileName: "src/components/NetworkInfo.js",
+                                            lineNumber: 126,
+                                            columnNumber: 19
+                                        }, undefined)
+                                    }, void 0, false, {
+                                        fileName: "src/components/NetworkInfo.js",
+                                        lineNumber: 125,
+                                        columnNumber: 17
+                                    }, undefined)
+                                ]
+                            }, void 0, true, {
+                                fileName: "src/components/NetworkInfo.js",
+                                lineNumber: 116,
                                 columnNumber: 13
                             }, undefined),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -32870,37 +32935,38 @@ const NetworkInfo = ({ serverId = null, connected = false, clientId = null })=>{
                                             children: "Debugging Info:"
                                         }, void 0, false, {
                                             fileName: "src/components/NetworkInfo.js",
-                                            lineNumber: 109,
+                                            lineNumber: 133,
                                             columnNumber: 17
                                         }, undefined),
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("br", {}, void 0, false, {
                                             fileName: "src/components/NetworkInfo.js",
-                                            lineNumber: 109,
-                                            columnNumber: 49
+                                            lineNumber: 134,
+                                            columnNumber: 17
                                         }, undefined),
-                                        "Server URL in App.js: ",
+                                        "Server URL: ",
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("code", {
-                                            children: "172.20.10.2:5000"
+                                            children: serverUrl
                                         }, void 0, false, {
                                             fileName: "src/components/NetworkInfo.js",
-                                            lineNumber: 110,
-                                            columnNumber: 39
+                                            lineNumber: 135,
+                                            columnNumber: 29
                                         }, undefined),
+                                        " ",
                                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("br", {}, void 0, false, {
                                             fileName: "src/components/NetworkInfo.js",
-                                            lineNumber: 110,
-                                            columnNumber: 68
+                                            lineNumber: 137,
+                                            columnNumber: 17
                                         }, undefined),
                                         "Try updating this URL if the whiteboard isn't syncing."
                                     ]
                                 }, void 0, true, {
                                     fileName: "src/components/NetworkInfo.js",
-                                    lineNumber: 108,
+                                    lineNumber: 132,
                                     columnNumber: 15
                                 }, undefined)
                             }, void 0, false, {
                                 fileName: "src/components/NetworkInfo.js",
-                                lineNumber: 107,
+                                lineNumber: 131,
                                 columnNumber: 13
                             }, undefined),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _networkDiagnosticDefault.default), {
@@ -32909,29 +32975,29 @@ const NetworkInfo = ({ serverId = null, connected = false, clientId = null })=>{
                                 clientId: clientId
                             }, void 0, false, {
                                 fileName: "src/components/NetworkInfo.js",
-                                lineNumber: 115,
+                                lineNumber: 142,
                                 columnNumber: 13
                             }, undefined)
                         ]
                     }, void 0, true, {
                         fileName: "src/components/NetworkInfo.js",
-                        lineNumber: 88,
+                        lineNumber: 91,
                         columnNumber: 11
                     }, undefined)
                 ]
             }, void 0, true, {
                 fileName: "src/components/NetworkInfo.js",
-                lineNumber: 75,
+                lineNumber: 78,
                 columnNumber: 9
             }, undefined)
         ]
     }, void 0, true, {
         fileName: "src/components/NetworkInfo.js",
-        lineNumber: 65,
+        lineNumber: 68,
         columnNumber: 5
     }, undefined);
 };
-_s(NetworkInfo, "RuPcLgR0tI/WSlCqFuHV+TbA1CE=");
+_s(NetworkInfo, "rKrVaXB1km4+TZZTGW2c9SVLPds=");
 _c = NetworkInfo;
 exports.default = NetworkInfo;
 var _c;
@@ -33422,6 +33488,6 @@ $RefreshReg$(_c, "UsersList");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}]},["5j6Kf","a0t4e"], "a0t4e", "parcelRequiree8ef", {}, null, null, "http://0.0.0.0:1234")
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}]},["ieapP","a0t4e"], "a0t4e", "parcelRequiree8ef", {}, null, null, "http://0.0.0.0:1234")
 
 //# sourceMappingURL=client.31b563d9.js.map
