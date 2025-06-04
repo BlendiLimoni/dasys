@@ -1,22 +1,19 @@
 {
   "name": "client",
   "version": "1.0.0",
-  "description": "Distributed task management system client",
   "scripts": {
     "start": "parcel src/index.html --host 0.0.0.0",
-    "build": "parcel build src/index.html --out-dir build --no-cache",
+    "build": "rm -rf dist && parcel build src/index.html --public-url ./",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "socket.io-client": "^4.7.4"
   },
   "devDependencies": {
-  "parcel": "^2.12.0",
-  "postcss": "^8.4.38"
-}
+    "parcel": "^2.12.0",
+    "postcss": "^8.4.38",
+    "@parcel/transformer-postcss": "^2.12.0"
+  }
 }
