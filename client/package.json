@@ -18,4 +18,12 @@
   "devDependencies": {
     "parcel": "^2.15.1"
   }
+  {
+  "targets": {
+    "default": {
+      "distDir": "build"
+    }
+  }
+}
+
 }
