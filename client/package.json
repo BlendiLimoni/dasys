@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Distributed task management system client",
   "scripts": {
-    "start": "parcel src/index.html --host 0.0.0.0",
-    "build": "parcel build src/index.html",
+   
+  "start": "node server.js",
+  "build": "react-scripts build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
