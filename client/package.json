@@ -2,11 +2,11 @@
   "name": "client",
   "version": "1.0.0",
   "description": "Distributed task management system client",
- "scripts": {
-  "start": "parcel src/index.html --host 0.0.0.0",
-  "build": "parcel build src/index.html --out-dir build --public-url ./",
-  "test": "echo \"Error: no test specified\" && exit 1"
-},
+  "scripts": {
+    "start": "parcel src/index.html --host 0.0.0.0",
+    "build": "parcel build src/index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -16,11 +16,6 @@
     "socket.io-client": "^4.7.4"
   },
   "devDependencies": {
-    "parcel": "^2.15.1"
-  },
-  "targets": {
-    "default": {
-      "distDir": "build"
-    }
+    "parcel": "^2.15.2"
   }
 }
