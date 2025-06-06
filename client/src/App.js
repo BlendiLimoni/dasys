@@ -7,7 +7,7 @@ import UserCursors from "./components/UserCursors";
 import UsersList from "./components/UsersList";
 
 // Get SERVER_URL from localStorage or use default
-const DEFAULT_SERVER_URL = "http://172.20.10.10:5000";
+const DEFAULT_SERVER_URL = "http://10.201.44.16:5000";
 const SERVER_URL =
   localStorage.getItem("whiteboardServerUrl") || DEFAULT_SERVER_URL;
 
