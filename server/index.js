@@ -4,6 +4,19 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 const { v4: uuidv4 } = require("uuid");
 const os = require("os");
+const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
+
+// Initialize SQLite DB
+const dbPath = path.join(__dirname, "whiteboards.db");
+const db = new sqlite3.Database(dbPath);
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS whiteboards (
+    id TEXT PRIMARY KEY,
+    data TEXT,
+    createdAt TEXT
+  )`);
+});
 
 const app = express();
 app.use(cors());
@@ -17,8 +30,8 @@ const io = socketIo(server, {
   },
 });
 
-// Store for drawing elements and connected clients
-const drawings = [];
+// Store for drawing elements per whiteboard
+const drawingsById = {};
 const users = {};
 let drawingsBackup = []; // Backup for recovery
 
@@ -29,9 +42,15 @@ function clearBackup() {
 
 // Backup drawings every 60 seconds
 setInterval(() => {
-  if (drawings.length > 0) {
-    drawingsBackup = [...drawings];
-    console.log(`Backed up ${drawings.length} drawing elements`);
+  if (Object.keys(drawingsById).length > 0) {
+    for (const whiteboardId in drawingsById) {
+      if (drawingsById[whiteboardId].length > 0) {
+        drawingsBackup = [...drawingsById[whiteboardId]];
+        console.log(
+          `Backed up ${drawingsById[whiteboardId].length} drawing elements for whiteboard ${whiteboardId}`
+        );
+      }
+    }
   }
 }, 60000);
 
@@ -39,6 +58,36 @@ setInterval(() => {
 io.on("connection", (socket) => {
   const clientId = socket.id;
   const query = socket.handshake.query;
+  // Extract whiteboardId from query
+  const whiteboardId = query.whiteboardId || "default";
+  socket.join(whiteboardId);
+
+  // If nuk ka vizatime në RAM për këtë whiteboardId, ngarko nga DB
+  if (!drawingsById[whiteboardId]) {
+    db.get(
+      `SELECT data FROM whiteboards WHERE id = ?`,
+      [whiteboardId],
+      (err, row) => {
+        if (!err && row && row.data) {
+          try {
+            drawingsById[whiteboardId] = JSON.parse(row.data);
+            console.log(
+              `Loaded drawings for whiteboard ${whiteboardId} from DB`
+            );
+          } catch (e) {
+            drawingsById[whiteboardId] = [];
+          }
+        } else {
+          drawingsById[whiteboardId] = [];
+        }
+        // Emit vizatimet tek klienti pas ngarkimit
+        socket.emit("init-drawings", drawingsById[whiteboardId]);
+      }
+    );
+  } else {
+    // Send current drawing state to new client
+    socket.emit("init-drawings", drawingsById[whiteboardId] || []);
+  }
 
   // Extract username from query if available
   const userName = query.userName || `User-${clientId.substr(0, 4)}`;
@@ -50,21 +99,63 @@ io.on("connection", (socket) => {
     color: getRandomColor(),
     joinedAt: new Date().toISOString(),
     lastActive: new Date().toISOString(),
+    whiteboardId,
   };
 
-  console.log(`Client connected: ${clientId} (${userName})`);
+  console.log(
+    `Client connected: ${clientId} (${userName}) to whiteboard ${whiteboardId}`
+  );
 
-  // Broadcast updated users list
-  io.emit("users-update", users);
-
-  // Send current drawing state to new client
-  socket.emit("init-drawings", drawings);
+  // Broadcast updated users list for this whiteboard
+  io.to(whiteboardId).emit(
+    "users-update",
+    Object.fromEntries(
+      Object.entries(users).filter(([_, u]) => u.whiteboardId === whiteboardId)
+    )
+  );
 
   // Handle request for initial state (drawings + users)
   socket.on("request-initial-state", () => {
-    console.log(`Client ${clientId} requested initial state`);
-    socket.emit("init-drawings", drawings);
-    socket.emit("users-update", users);
+    // Nëse nuk ka vizatime në RAM për këtë whiteboardId, ngarko nga DB para se të dërgosh
+    if (!drawingsById[whiteboardId]) {
+      db.get(
+        `SELECT data FROM whiteboards WHERE id = ?`,
+        [whiteboardId],
+        (err, row) => {
+          if (!err && row && row.data) {
+            try {
+              drawingsById[whiteboardId] = JSON.parse(row.data);
+              console.log(
+                `Loaded drawings for whiteboard ${whiteboardId} from DB (on request-initial-state)`
+              );
+            } catch (e) {
+              drawingsById[whiteboardId] = [];
+            }
+          } else {
+            drawingsById[whiteboardId] = [];
+          }
+          socket.emit("init-drawings", drawingsById[whiteboardId]);
+          socket.emit(
+            "users-update",
+            Object.fromEntries(
+              Object.entries(users).filter(
+                ([_, u]) => u.whiteboardId === whiteboardId
+              )
+            )
+          );
+        }
+      );
+    } else {
+      socket.emit("init-drawings", drawingsById[whiteboardId] || []);
+      socket.emit(
+        "users-update",
+        Object.fromEntries(
+          Object.entries(users).filter(
+            ([_, u]) => u.whiteboardId === whiteboardId
+          )
+        )
+      );
+    }
   });
 
   // Handle drawing settings changes
@@ -76,8 +167,8 @@ io.on("connection", (socket) => {
       users[clientId].lastActive = new Date().toISOString();
     }
 
-    // Broadcast to all OTHER clients
-    socket.broadcast.emit("drawing-settings-change", data);
+    // Broadcast to all OTHER clients in this whiteboard
+    socket.broadcast.to(whiteboardId).emit("drawing-settings-change", data);
   });
 
   // Handle user information updates
@@ -89,8 +180,15 @@ io.on("connection", (socket) => {
         lastActive: new Date().toISOString(),
       };
 
-      // Broadcast updated users list to all clients
-      io.emit("users-update", users);
+      // Broadcast updated users list to all clients in this whiteboard
+      io.to(whiteboardId).emit(
+        "users-update",
+        Object.fromEntries(
+          Object.entries(users).filter(
+            ([_, u]) => u.whiteboardId === whiteboardId
+          )
+        )
+      );
       console.log(
         `Updated user info for ${clientId}, broadcasting to all clients`
       );
@@ -110,8 +208,8 @@ io.on("connection", (socket) => {
       users[clientId].lastActive = new Date().toISOString();
     }
 
-    // Broadcast cursor position to all other clients
-    socket.broadcast.emit("cursor-move", {
+    // Broadcast cursor position to all other clients in this whiteboard
+    socket.broadcast.to(whiteboardId).emit("cursor-move", {
       clientId,
       x: data.x,
       y: data.y,
@@ -135,24 +233,23 @@ io.on("connection", (socket) => {
       createdBy: clientId,
       timestamp: new Date().toISOString(),
     };
-
-    // Store drawing element
-    drawings.push(drawingElement);
-
-    // Broadcast to ALL clients including sender to ensure consistency
-    io.emit("draw-element", drawingElement);
+    // Store drawing element for this whiteboard
+    if (!drawingsById[whiteboardId]) drawingsById[whiteboardId] = [];
+    drawingsById[whiteboardId].push(drawingElement);
+    // Broadcast to all clients in this whiteboard
+    io.to(whiteboardId).emit("draw-element", drawingElement);
     console.log(
       `Broadcasting drawing element #${drawingElement.id} to all clients`
     );
 
     // If we have too many elements, consider cleaning up
-    if (drawings.length > 10000) {
+    if (drawingsById[whiteboardId].length > 10000) {
       // Remove oldest elements to keep memory footprint manageable
       // Only remove freehand drawing points which can be numerous
-      const excessElements = drawings.length - 10000;
+      const excessElements = drawingsById[whiteboardId].length - 10000;
       if (excessElements > 0) {
         let removed = 0;
-        const newDrawings = drawings.filter((d) => {
+        const newDrawings = drawingsById[whiteboardId].filter((d) => {
           if (removed >= excessElements) return true;
           if (d.type === "pencil" && d.points && d.points.length > 0) {
             removed++;
@@ -161,14 +258,13 @@ io.on("connection", (socket) => {
           return true;
         });
 
-        if (newDrawings.length < drawings.length) {
+        if (newDrawings.length < drawingsById[whiteboardId].length) {
           console.log(
             `Cleaned up ${
-              drawings.length - newDrawings.length
+              drawingsById[whiteboardId].length - newDrawings.length
             } old drawing elements`
           );
-          drawings.length = 0;
-          drawings.push(...newDrawings);
+          drawingsById[whiteboardId] = newDrawings;
         }
       }
     }
@@ -181,8 +277,8 @@ io.on("connection", (socket) => {
     // Backup before clearing
     // drawingsBackup = [...drawings];
 
-    // Clear all drawings
-    drawings.length = 0;
+    // Clear all drawings for this whiteboard
+    if (drawingsById[whiteboardId]) drawingsById[whiteboardId].length = 0;
     clearBackup();
 
     // Update user's last active timestamp
@@ -190,22 +286,22 @@ io.on("connection", (socket) => {
       users[clientId].lastActive = new Date().toISOString();
     }
 
-    // Broadcast to all OTHER clients
-    socket.broadcast.emit("clear-canvas");
+    // Broadcast to all clients in this whiteboard
+    socket.to(whiteboardId).emit("clear-canvas");
   });
 
   // Handle undo last action
   socket.on("undo", () => {
-    if (drawings.length > 0) {
+    if (drawingsById[whiteboardId] && drawingsById[whiteboardId].length > 0) {
       // Find last element drawn by this user
-      for (let i = drawings.length - 1; i >= 0; i--) {
-        if (drawings[i].createdBy === clientId) {
+      for (let i = drawingsById[whiteboardId].length - 1; i >= 0; i--) {
+        if (drawingsById[whiteboardId][i].createdBy === clientId) {
           // Remove it
-          const removed = drawings.splice(i, 1)[0];
+          const removed = drawingsById[whiteboardId].splice(i, 1)[0];
           console.log(`User ${clientId} undid element ${removed.id}`);
 
-          // Notify all clients to redraw
-          io.emit("undo", { elementId: removed.id });
+          // Notify all clients in this whiteboard to redraw
+          io.to(whiteboardId).emit("undo", { elementId: removed.id });
           break;
         }
       }
@@ -223,11 +319,18 @@ io.on("connection", (socket) => {
     // Remove from users list
     delete users[clientId];
 
-    // Notify other clients about disconnection
-    io.emit("client-disconnected", clientId);
+    // Notify other clients in this whiteboard
+    io.to(whiteboardId).emit("client-disconnected", clientId);
 
-    // Broadcast updated users list
-    io.emit("users-update", users);
+    // Broadcast updated users list for this whiteboard
+    io.to(whiteboardId).emit(
+      "users-update",
+      Object.fromEntries(
+        Object.entries(users).filter(
+          ([_, u]) => u.whiteboardId === whiteboardId
+        )
+      )
+    );
   });
 });
 
@@ -266,7 +369,7 @@ const getLocalIPs = () => {
 
 // API endpoints
 app.get("/api/drawings", (req, res) => {
-  res.json(drawings);
+  res.json(drawingsById);
 });
 
 app.get("/api/users", (req, res) => {
@@ -282,13 +385,74 @@ app.post("/api/restore-backup", (req, res) => {
   }
 
   if (drawingsBackup.length > 0) {
-    drawings.length = 0;
-    drawings.push(...drawingsBackup);
-    io.emit("init-drawings", drawings);
+    for (const whiteboardId in drawingsBackup) {
+      if (!drawingsById[whiteboardId]) drawingsById[whiteboardId] = [];
+      drawingsById[whiteboardId] = [...drawingsBackup[whiteboardId]];
+    }
+    io.emit("init-drawings", drawingsById);
     res.json({ success: true, restored: drawingsBackup.length });
   } else {
     res.status(404).json({ error: "No backup available" });
   }
+});
+
+// API endpoint to create a new whiteboard and save to DB
+app.post("/api/whiteboard", (req, res) => {
+  const id = uuidv4();
+  const data = JSON.stringify(req.body.drawings || []);
+  const createdAt = new Date().toISOString();
+  db.run(
+    `INSERT INTO whiteboards (id, data, createdAt) VALUES (?, ?, ?)`,
+    [id, data, createdAt],
+    function (err) {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "DB error", details: err.message });
+      }
+      // Ruaj vizatimet edhe në RAM për këtë whiteboardId
+      drawingsById[id] = req.body.drawings || [];
+      res.json({ id });
+    }
+  );
+});
+
+// API endpoint to update an existing whiteboard in DB
+app.post("/api/whiteboard/:id", (req, res) => {
+  const id = req.params.id;
+  const data = JSON.stringify(req.body.drawings || []);
+  db.run(
+    `UPDATE whiteboards SET data = ? WHERE id = ?`,
+    [data, id],
+    function (err) {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "DB error", details: err.message });
+      }
+      // Update vizatimet në RAM
+      drawingsById[id] = req.body.drawings || [];
+      res.json({ success: true });
+    }
+  );
+});
+
+// API endpoint to get a whiteboard by ID (MUNGONTE)
+app.get("/api/whiteboard/:id", (req, res) => {
+  const id = req.params.id;
+  db.get(`SELECT data FROM whiteboards WHERE id = ?`, [id], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: "DB error", details: err.message });
+    }
+    if (!row) {
+      return res.status(404).json({ error: "Whiteboard not found" });
+    }
+    let drawings = [];
+    try {
+      drawings = JSON.parse(row.data);
+    } catch (e) {}
+    res.json({ drawings });
+  });
 });
 
 // Serve a simple landing page with connection info
@@ -380,7 +544,7 @@ app.get("/", (req, res) => {
         <div class="label">Connected Users</div>
       </div>
       <div class="stat-card green">
-        <div class="value">${drawings.length}</div>
+        <div class="value">${Object.values(drawingsById).flat().length}</div>
         <div class="label">Drawing Elements</div>
       </div>
       <div class="stat-card purple">
@@ -416,6 +580,8 @@ app.get("/", (req, res) => {
       <ul>
         <li><a href="/api/drawings">/api/drawings</a> - View current drawings data</li>
         <li><a href="/api/users">/api/users</a> - View connected users</li>
+        <li><a href="/api/whiteboard">/api/whiteboard</a> - Create a new whiteboard</li>
+        <li><a href="/api/whiteboard/:id">/api/whiteboard/:id</a> - Load a whiteboard by ID</li>
       </ul>
     </div>
   </body>
