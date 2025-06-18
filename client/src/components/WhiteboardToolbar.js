@@ -163,6 +163,7 @@ const WhiteboardToolbar = ({ settings, onSettingsChange, onClear, onSave }) => {
             </div>
 
             {/* Action Buttons */}
+
             <div className="col-md-9 text-end">
               <button className="btn btn-success me-2" onClick={onSave}>
                 <i className="bi bi-download me-1"></i> Save
