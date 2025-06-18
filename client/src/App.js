@@ -7,7 +7,7 @@ import UserCursors from "./components/UserCursors";
 import UsersList from "./components/UsersList";
 
 // Get SERVER_URL from localStorage or use default
-const DEFAULT_SERVER_URL = "https://collaborativewiteboard.onrender.com/";
+const DEFAULT_SERVER_URL = "http://172.20.10.10:5000";
 const SERVER_URL =
   localStorage.getItem("whiteboardServerUrl") || DEFAULT_SERVER_URL;
 
@@ -34,6 +34,9 @@ function App() {
     lineWidth: 4,
     tool: "pencil",
   });
+  const [saveId, setSaveId] = useState("");
+  const [loadId, setLoadId] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Element states
   const [selectedElement, setSelectedElement] = useState(null);
@@ -103,7 +106,7 @@ function App() {
       reconnectionAttempts: maxReconnectAttempts,
       reconnectionDelay: 1000,
       timeout: 10000,
-      query: { userName },
+      query: { userName, whiteboardId: loadId || saveId || "default" },
     });
 
     // Better connection management
@@ -247,6 +250,7 @@ function App() {
             case "line":
               scaledEl.startX *= scaleX;
               scaledEl.startY *= scaleY;
+
               scaledEl.endX *= scaleX;
               scaledEl.endY *= scaleY;
               break;
@@ -490,7 +494,7 @@ function App() {
       document.removeEventListener("mousemove", handleMouseMove);
       newSocket.disconnect();
     };
-  }, [userName, serverUrl]);
+  }, [userName, serverUrl, loadId, saveId]);
 
   // Effect for updating drawing context when settings change
   useEffect(() => {
@@ -534,6 +538,67 @@ function App() {
       socket.emit("user-info", { userName: newName });
     }
   };
+
+  // Save whiteboard to server and get ID
+  const saveWhiteboardToServer = async () => {
+    setLoading(true);
+    try {
+      // Clear all local elements before creating a new whiteboard
+      elementsRef.current = [];
+      redrawCanvas();
+      setLoadId("");
+      setSaveId("");
+      // Always create a new whiteboard (do not use existing id)
+      const response = await fetch(`${serverUrl}/api/whiteboard`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ drawings: elementsRef.current }),
+      });
+      const data = await response.json();
+      if (response.ok && data.id) {
+        setSaveId(data.id);
+        setLoadId(data.id);
+        localStorage.setItem("whiteboardId", data.id);
+        alert(`Whiteboard saved! Share this ID: ${data.id}`);
+      } else {
+        alert("Failed to save whiteboard: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Error saving whiteboard: " + err.message);
+    }
+    setLoading(false);
+  };
+
+  // Load whiteboard from server by ID
+  const handleLoadWhiteboard = async () => {
+    const id = prompt("Enter whiteboard ID to load:", loadId);
+    if (!id) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${serverUrl}/api/whiteboard/${id}`);
+      const data = await response.json();
+      if (response.ok && data.drawings) {
+        elementsRef.current = data.drawings;
+        setLoadId(id);
+        setSaveId(id);
+        redrawCanvas();
+        alert("Whiteboard loaded!");
+      } else {
+        alert("Failed to load whiteboard: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Error loading whiteboard: " + err.message);
+    }
+    setLoading(false);
+  };
+
+  // Kur ndryshon loadId, pastro edhe vizatimet lokale
+  useEffect(() => {
+    if (loadId) {
+      elementsRef.current = [];
+      redrawCanvas();
+    }
+  }, [loadId]);
 
   // Redraw the entire canvas
   const redrawCanvas = () => {
@@ -1156,6 +1221,15 @@ function App() {
     }
   }, []);
 
+  // On mount, kontrollo në localStorage për whiteboardId
+  useEffect(() => {
+    const storedId = localStorage.getItem("whiteboardId");
+    if (storedId) {
+      setLoadId(storedId);
+      setSaveId(storedId);
+    }
+  }, []);
+
   // Add connection diagnostic function
   const diagnoseConnection = () => {
     if (!socket) {
@@ -1266,9 +1340,42 @@ function App() {
       <WhiteboardToolbar
         settings={drawingSettings}
         onSettingsChange={handleSettingsChange}
-        onClear={clearCanvas}
-        onSave={saveCanvas}
+        onClear={handleLoadWhiteboard}
+        onSave={saveWhiteboardToServer}
       />
+
+      {/* Zëvendëso butonat e vjetër me butonat e rinj modern */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: "10px",
+          marginBottom: 10,
+        }}
+      >
+        <button
+          className="btn btn-outline-primary"
+          style={{ fontWeight: 600, borderRadius: 20, minWidth: 160 }}
+          onClick={saveWhiteboardToServer}
+          disabled={loading}
+          title="Create a new whiteboard (generates a new ID)"
+        >
+          <i className="bi bi-plus-circle me-1"></i> New Whiteboard
+        </button>
+        <button
+          className="btn btn-primary"
+          style={{ fontWeight: 600, borderRadius: 20, minWidth: 200 }}
+          onClick={handleLoadWhiteboard}
+          title="Connect and load a whiteboard by ID"
+        >
+          <i className="bi bi-link-45deg me-1"></i> Connect and Load Whiteboard
+        </button>
+      </div>
+      {saveId && (
+        <span style={{ marginLeft: 10 }}>
+          <b>Share ID:</b> <code>{saveId}</code>
+        </span>
+      )}
 
       <div className="canvas-container">
         <canvas
